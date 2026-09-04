@@ -1,88 +1,67 @@
-# ResuMate — Android APK build
+# ResuMate — Android APK
 
-This folder is a real [Capacitor](https://capacitorjs.com) project: it wraps
-`www/index.html` (the ResuMate app) in a native Android WebView shell so it
-can be built into an installable `.apk`.
+ResuMate is a lightweight Capacitor Android app that packages the web app in `www/index.html` into an installable APK.
 
-Claude's sandbox can reach npm, but **not** Gradle's or Google's servers
-(`services.gradle.org`, `dl.google.com`), so the actual compile has to
-happen somewhere with normal internet access — GitHub's own servers, or
-your Codespace. Everything up to that point (the full Android project,
-Gradle wrapper, manifest, icons) is already generated and included here.
+## Clean project structure
 
-## Option A — GitHub Actions (easiest, no terminal needed)
+`www/index.html` is the **single canonical app entry point**. The duplicate root `index.html` has been removed so the app cannot accidentally build from two different HTML copies.
 
-1. Push this repo to GitHub.
-2. Go to the **Actions** tab → the "Build ResuMate APK" workflow runs
-   automatically on every push to `main` (or run it manually via
-   "Run workflow").
-3. When it finishes, open the run → **Artifacts** → download
-   `resumate-debug-apk`. Unzip it — that's your installable `app-debug.apk`.
+Core files:
 
-This is the most reliable path since GitHub's hosted runners already have
-Gradle/Android SDK network access built in.
+- `www/index.html` — current ResuMate UI/app
+- `capacitor.config.json` — app ID/name configuration
+- `package.json` / `package-lock.json` — Capacitor dependencies and build scripts
+- `.github/workflows/main.yml` — automatic GitHub Actions APK build
+- `settings.gradle` / `proguard-rules.pro` — Android build configuration
 
-## Option B — GitHub Codespaces (interactive, what you asked for)
+The repository currently contains one HTML app source: `www/index.html`.
 
-1. On the repo page: **Code → Codespaces → Create codespace on main**.
-2. Wait for the container to finish building — it automatically runs
-   `.devcontainer/setup-android-sdk.sh`, which installs a minimal Android
-   SDK (platform 34 + build-tools) and `npm install`s the Capacitor deps.
-   This takes a few minutes the first time; watch the "Setting up
-   codespace" log in the terminal.
-3. Once it's done, open a **new terminal** (so the SDK env vars from
-   `~/.bashrc` are loaded) and run:
-   ```bash
-   cd android
-   ./gradlew assembleDebug
-   ```
-4. The APK lands at:
-   ```
-   android/app/build/outputs/apk/debug/app-debug.apk
-   ```
-5. In the Codespace file explorer, right-click that file → **Download**.
+## Build APK automatically
 
-If step 2's download URL for the command-line tools ever 404s (Google
-occasionally rotates the version number), grab the current one from
-https://developer.android.com/studio#command-tools and swap it into
-`.devcontainer/setup-android-sdk.sh`, then re-run that script.
+Every push to `main` starts the **Build ResuMate APK** GitHub Actions workflow. It:
 
-## Installing the APK on your phone
+1. Installs Node.js 24 and Java 21.
+2. Runs `npm ci`.
+3. Verifies the clean project structure.
+4. Creates the Android platform when `android/` is not present.
+5. Runs `npx cap sync android` so the latest `www/index.html` is packaged.
+6. Runs `./gradlew assembleDebug`.
+7. Uploads `resumate-debug-apk` as a downloadable workflow artifact.
 
-`app-debug.apk` is unsigned-for-release but perfectly installable for
-personal use:
-1. Copy it to your phone (email, Drive, USB, etc.)
-2. Tap it → Android will ask to allow "install from this source" once.
-3. Install.
+## Download the APK
 
-## Making a real Play Store release build
+1. Open the repository's **Actions** tab.
+2. Open the latest **Build ResuMate APK** run.
+3. Wait until the build job is green.
+4. Scroll to **Artifacts**.
+5. Download **resumate-debug-apk**.
+6. Unzip it and install `app-debug.apk` on an Android phone.
 
-The workflow also builds `app-release-unsigned.apk`. Before this can go on
-the Play Store (or be installed as a "real" release build), it needs to be
-signed with your own keystore:
+## Local/Codespace build
+
 ```bash
-keytool -genkey -v -keystore resumate.keystore -alias resumate -keyalg RSA -keysize 2048 -validity 10000
-jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore resumate.keystore app-release-unsigned.apk resumate
-zipalign -v 4 app-release-unsigned.apk ResuMate-release.apk
-```
-Keep `resumate.keystore` somewhere safe and **never commit it to GitHub** —
-losing it means you can never publish an update to the same app listing again.
-
-## Updating the app later
-
-Whenever you get a new version of the HTML file from Claude:
-```bash
-cp new-file.html www/index.html
+npm ci
 npx cap sync android
+cd android
+./gradlew assembleDebug --no-daemon
 ```
-then rebuild via either option above.
 
-## What's in here
-- `www/index.html` — the ResuMate app (today's build, with the free
-  Groq/OpenRouter AI backend and onboarding screen)
-- `capacitor.config.json` — app ID `com.krapal.resumate`, app name "ResuMate"
-- `android/` — full native Android Studio/Gradle project (generated by
-  `npx cap add android`), including the Gradle wrapper
-- `.github/workflows/build-apk.yml` — CI build → downloadable APK artifact
-- `.devcontainer/` — makes `./gradlew assembleDebug` work directly in a
-  fresh Codespace terminal
+APK output:
+
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+## Updating the app
+
+Replace only the canonical file:
+
+```text
+www/index.html
+```
+
+Then commit/push to `main`. GitHub Actions will automatically build a fresh APK from that version.
+
+## Release build
+
+The debug APK is intended for testing/personal installation. A Play Store release should use a properly configured signing keystore and Android App Bundle/release signing process; never commit the keystore or signing credentials to this repository.
