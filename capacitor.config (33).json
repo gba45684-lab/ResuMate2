@@ -1,9 +1,0 @@
-{
-  "appId": "com.krapal.resumate",
-  "appName": "ResuMate",
-  "webDir": "www",
-  "bundledWebRuntime": false,
-  "android": {
-    "allowMixedContent": true
-  }
-}
