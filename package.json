@@ -1,12 +1,15 @@
 {
   "name": "resumate-apk",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "ResuMate resume studio Android app",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run sync",
+    "sync": "npx cap sync android",
+    "android:debug": "npx cap sync android && cd android && ./gradlew assembleDebug --no-daemon",
+    "test": "echo \"No automated tests configured\""
   },
-  "keywords": [],
+  "keywords": ["resumate", "resume", "capacitor", "android"],
   "author": "",
   "license": "ISC",
   "dependencies": {
