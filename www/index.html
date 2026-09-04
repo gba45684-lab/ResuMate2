@@ -2,32 +2,94 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#161A20">
+<meta name="description" content="ResuMate - Professional Resume Builder">
 <title>ResuMate &mdash; Resume Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lato:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Manrope:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Playfair+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Raleway:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css">
 <style>
-:root{
+html, body { width: 100%; height: 100%; }
+:root {
   --paper:#F3EEDE;--paper2:#E7DFC5;--ink:#161A20;--soft:#585F68;--faint:#8B9198;
   --navy:#1D3450;--navy2:#28496B;--brass:#9C7C3E;--brass-deep:#6E552A;
   --forest:#3C5C4C;--forest2:#DEE7DE;--rust:#8B4638;--rust2:#EFDFDA;
   --line:rgba(22,26,32,.16);--card:#FFFFFF;--shadow:0 22px 46px rgba(10,12,16,.34);
   --resume-font:Inter,system-ui,sans-serif;--resume-text:#161A20;--resume-heading:#161A20;
+  --safe-area-inset-top: env(safe-area-inset-top);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  --safe-area-inset-left: env(safe-area-inset-left);
+  --safe-area-inset-right: env(safe-area-inset-right);
 }
-*{box-sizing:border-box}
-body{margin:0;background:radial-gradient(ellipse at 50% -14%,#24314a 0%,#0c0e13 64%);font-family:'IBM Plex Sans',system-ui,sans-serif;color:var(--ink);padding:30px 12px 60px}
-.rig{max-width:430px;margin:auto}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(ellipse at 50% -14%, #24314a 0%, #0c0e13 64%);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+.rig {
+  max-width: 100%;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.screen {
+  height: 100%;
+  width: 100%;
+  background: var(--paper);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: max(0px, var(--safe-area-inset-top)) max(0px, var(--safe-area-inset-right)) max(0px, var(--safe-area-inset-bottom)) max(0px, var(--safe-area-inset-left));
+}
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 30px 12px 60px 12px;
+}
+.phone { display: none; }
+.label { display: none; }
+.notch { display: none; }
+.status { padding-top: max(8px, var(--safe-area-inset-top)); }
+.bar { padding: 8px 18px 13px; }
+.nav { padding-bottom: max(8px, var(--safe-area-inset-bottom)); }
+
+/* Responsive Typography */
+@media (max-width: 600px) {
+  body { font-size: 14px; }
+  .hero { font-size: 20px; }
+  .content { padding: 16px 10px 60px; }
+}
+@media (max-width: 480px) {
+  body { font-size: 13px; }
+  .hero { font-size: 18px; }
+  .content { padding: 12px 8px 50px; }
+}
+
+/* Rest of CSS from original */
 .label{text-align:center;color:#b9c0cc;font:11px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;opacity:.85}
-.phone{height:850px;background:linear-gradient(160deg,#1b1712,#100d0a);border-radius:34px;padding:11px;box-shadow:var(--shadow);border:1px solid rgba(156,124,62,.25)}
-.screen{height:100%;background:var(--paper);border-radius:24px;overflow:hidden;position:relative;display:flex;flex-direction:column}
-.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:96px;height:20px;background:#100d0a;border-radius:0 0 12px 12px;z-index:20}
-.status{height:32px;padding:0 20px;display:flex;justify-content:space-between;align-items:center;font:11px 'IBM Plex Mono',monospace;color:var(--soft);flex-shrink:0;letter-spacing:.02em}
-.bar{padding:8px 18px 13px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
 .brand{font:600 21px 'Fraunces',Georgia,serif}
 .brand b{color:var(--brass-deep);font-weight:600}
 .tag{font:10px 'IBM Plex Mono',monospace;color:var(--faint);letter-spacing:.08em;text-transform:uppercase}
@@ -40,583 +102,94 @@ h1,h2,h3,h4,p{margin-top:0}
 .eyebrow{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:500;font-size:12.5px;color:var(--brass-deep)}
 .hero{font:500 26px 'Fraunces',Georgia,serif;line-height:1.16;margin:6px 0 18px;letter-spacing:-.005em}
 button{font:inherit;cursor:pointer;color:inherit}
-
-/* Buttons */
 .primary{width:100%;border:0;border-left:4px solid var(--brass);background:var(--navy);color:var(--paper);border-radius:4px;padding:14px 15px 14px 13px;font-weight:600;text-align:left}
 .primary small{display:block;font-weight:400;opacity:.75;margin-top:3px;font-size:11px}
 .outline{border:1px solid var(--line);background:var(--card);border-radius:4px;padding:10px;font-weight:600;font-size:11px}
 .outline:active{background:var(--paper2)}
 .danger{color:var(--rust)}
-.mini-btn{border:1px solid var(--line);background:var(--paper2);border-radius:3px;padding:4px 8px;font-size:9px;font-weight:600}
-.pay{width:100%;border:0;border-left:4px solid var(--brass);background:var(--ink);color:var(--paper);padding:13px 14px;border-radius:4px;font-weight:600;margin-top:10px}
-.actionbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-
-/* Cards & rows */
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:13px;min-height:90px}
 .card strong{display:block;font-size:13px;margin-bottom:4px;font-weight:600}
 .card small{font-size:10.5px;color:var(--soft);line-height:1.4}
-.icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;font-size:14px;margin-bottom:8px;background:rgba(156,124,62,.14);border-radius:4px;color:var(--brass-deep)}
-.icon.danger{background:var(--rust2);color:var(--rust)}
-.section{font:11px 'IBM Plex Mono',monospace;letter-spacing:.06em;color:var(--faint);margin:22px 0 9px;padding-bottom:5px;border-bottom:1px solid var(--line)}
 .row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:10px 11px;margin-bottom:8px}
-.thumb{width:32px;height:42px;background:var(--paper2);border:1px solid var(--line);flex:none}
-.rowmain{flex:1;min-width:0}
-.rowmain b{font-size:12px;display:block;font-weight:600}
-.rowmain small{font-size:9.5px;color:var(--faint)}
-.scorepill{background:var(--forest2);color:var(--forest);padding:4px 8px;border-radius:20px;font:600 10px 'IBM Plex Mono',monospace}
-.banner{background:var(--ink);color:var(--paper);border-radius:4px;padding:14px;margin-top:16px;display:flex;gap:11px;align-items:center;border-left:4px solid var(--brass)}
-.banner small{color:#c9cdd4}
-.seal{width:34px;height:34px;border-radius:50%;background:var(--brass);color:#1b1712;display:grid;place-items:center;font-weight:700;flex:none;font-family:'Fraunces',serif}
-
-/* Nav */
 .nav{display:flex;border-top:1px solid var(--line);background:var(--paper);flex-shrink:0}
 .nav button{flex:1;border:0;border-top:2px solid transparent;background:none;padding:9px 2px 10px;color:var(--faint);font-size:9.5px;min-width:0}
 .nav button.active{color:var(--navy);font-weight:700;border-top-color:var(--brass)}
 .nav i{display:block;font-size:17px;font-style:normal;margin-bottom:3px}
-.nav-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* Filters / chips */
-.top-actions,.filters{display:flex;gap:7px;overflow:auto;padding:12px 18px 3px}
-.chip{white-space:nowrap;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:6px 11px;font-size:10px}
-.chip.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-
-/* Builder */
-.builder-head{padding:12px 18px 0}
-.steps{display:flex;gap:4px;margin-bottom:9px}
-.steps span{height:3px;flex:1;background:var(--line);border-radius:2px;cursor:pointer}
-.steps .done{background:var(--brass)}
-.steps .now{background:var(--navy)}
-.stepmeta{display:flex;justify-content:space-between;align-items:center}
-.stepmeta h3{font:600 19px 'Fraunces',Georgia,serif;margin:0}
-.stepmeta small{font:10px 'IBM Plex Mono',monospace;color:var(--faint)}
-.toggle{display:flex;background:var(--paper2);padding:3px;border-radius:6px;margin:9px 18px}
-.toggle button{flex:1;border:0;background:none;padding:7px;border-radius:4px;font-size:11px;font-weight:600;color:var(--faint)}
-.toggle .on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.form{padding:0 18px 10px}
-.field{margin-bottom:10px}
-.field label{display:block;font-size:10.5px;font-weight:700;color:var(--soft);margin-bottom:5px}
-.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:4px;background:var(--card);padding:9px 10px;font-size:12px;color:var(--ink);font-family:inherit}
-textarea{min-height:58px;resize:none}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.item{border:1px solid var(--line);background:var(--card);border-radius:4px;padding:11px;margin-bottom:8px}
-.itemhead{display:flex;justify-content:space-between;gap:6px;font-size:11px;font-weight:700;margin-bottom:7px}
-.bullet{display:flex;gap:5px;margin-top:5px}
-.bullet input{flex:1}
-.hint{font-size:9px;color:var(--faint);margin-top:4px}
-.ai{background:var(--forest2);color:var(--forest);border-radius:4px;padding:8px 10px;font-size:10px;margin:8px 0}
-.builder-foot{display:flex;gap:8px;padding:10px 18px 12px;border-top:1px solid var(--line);background:var(--paper)}
-.builder-foot button{flex:1;border-radius:4px;padding:10px;border:1px solid var(--line);font-weight:700;font-size:11px;background:var(--card)}
-.builder-foot .next{background:var(--navy);color:var(--paper);border:0;border-left:4px solid var(--brass)}
-
-/* Resume paper */
-.paper{background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.16);width:91%;margin:13px auto;padding:20px 18px;font-size:9px;line-height:1.48}
-.paper.template-ink{border-top:5px solid var(--navy)}
-.paper.template-ledger{border-left:5px solid var(--brass)}
-.paper.template-column{box-shadow:inset 5px 0 0 var(--navy),0 8px 20px rgba(0,0,0,.16)}
-.paper.template-classic{font-family:Georgia,serif}
-.paper.template-minimal{box-shadow:none;border:1px solid #ddd}
-.paper.template-executive{border-top:7px solid var(--ink)}
-.paper.template-modern{border-left:7px solid var(--navy)}
-.paper.template-academic{font-family:Georgia,serif;border-top:2px solid var(--ink)}
-.paper.template-portfolio{border-radius:8px}
-.paper.template-creative{border-left:7px solid var(--brass);border-radius:8px}
-.paper h2{font:600 20px 'Fraunces',Georgia,serif;margin:0}
-.paper .role{color:var(--navy);font-weight:bold;font-size:10px;text-transform:uppercase;letter-spacing:.03em}
-.paper h5{font:700 9px 'IBM Plex Mono',monospace;color:var(--brass-deep);border-bottom:1px solid var(--line);padding-bottom:3px;margin:12px 0 5px;letter-spacing:.04em}
-.paper p{color:#4a4a4a;margin-bottom:5px}
-.paper li{color:#4a4a4a;margin-bottom:2px}
-.skills span{display:inline-block;border:1px solid var(--line);padding:3px 7px;border-radius:3px;margin:2px;font-size:8px}
-
-/* Templates gallery */
-.templates{padding:14px 18px 25px}
-.tmplgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tmpl{background:#fff;border:1px solid var(--line);border-radius:4px;overflow:hidden}
-.tmplpic{height:112px;background:var(--paper2);padding:13px;position:relative}
-.mini{height:100%;background:#fff;padding:8px;box-shadow:0 2px 6px rgba(0,0,0,.14)}
-.mini .ln{height:2px;background:#c3c3c3;margin:4px 0;width:80%}
-.mini .ln.s{width:50%}
-.lock{position:absolute;right:7px;top:7px;background:var(--brass);color:#1b1712;border-radius:50%;width:20px;height:20px;display:grid;place-items:center;font-size:10px}
-.tmplinfo{padding:8px 9px}
-.tmplinfo b{font-size:11px;font-weight:600}
-.tmplinfo small{display:block;color:var(--faint);font-size:9px;margin-top:2px}
-
-/* Score */
-.gauge{text-align:center;padding:14px 0 6px}
-.gauge .num{font:500 42px 'Fraunces',Georgia,serif;color:var(--navy)}
-.meter{height:6px;background:var(--paper2);border-radius:3px;overflow:hidden}
-.meter i{display:block;height:100%;background:var(--navy)}
-.scoreline{margin:12px 0}
-.scoreline header{display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:5px}
-.suggest{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--brass);border-radius:4px;padding:10px 11px;font-size:10.5px;color:var(--soft);margin:7px 0}
-.good{color:var(--forest)}
-
-/* Settings */
-.settings .card{min-height:auto;margin-bottom:8px}
-.switch{float:right;width:36px;height:20px;background:#c2c2c2;border-radius:20px;padding:2px}
-.switch i{display:block;width:16px;height:16px;background:#fff;border-radius:50%}
-.switch.on{background:var(--forest)}
-.switch.on i{margin-left:16px}
-
-/* Overlays (bottom sheet) */
-.overlay{position:absolute;inset:0;background:var(--paper);z-index:30;display:none;flex-direction:column}
-.overlay.show{display:flex}
-.overlayhead{padding:15px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
-.close{border:0;background:var(--paper2);border-radius:50%;width:28px;height:28px}
-.overlaybody{overflow:auto;padding:18px}
-.plan{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:12px;margin:8px 0}
-.plan.best{border:1.5px solid var(--brass);background:#fbf6ea}
-.change{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-.change>div{border:1px solid var(--line);border-radius:4px;padding:9px;font-size:10px;background:var(--card)}
-.change .new{border-color:var(--forest)}
-.versionrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:10px 0}
-.badge2{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:9px;color:var(--soft)}
-
-/* Toast */
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:4px;font-size:11px;z-index:9999;transition:.2s;border-left:3px solid var(--brass)}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* Career hub */
-.aihub{display:grid;gap:12px}
-.aihero{background:linear-gradient(135deg,var(--ink),var(--navy2));color:white;border-radius:4px;padding:19px;border-left:4px solid var(--brass)}
-.aihero h3{font:600 21px 'Fraunces',Georgia,serif;margin:5px 0 8px}
-.aihero p{margin:0;color:#dbe2ea;line-height:1.55;font-size:12px}
-.ai-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:14px}
-.ai-action{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:11px;color:#fff;text-align:left}
-.ai-action b{display:block;font-size:11px;font-weight:600}
-.ai-action small{display:block;color:#d8e0e9;margin-top:3px}
-.metricgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.metric{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:11px}
-.metric b{display:block;font:600 22px 'Fraunces',Georgia,serif;color:var(--navy)}
-.metric small{color:var(--soft);font-size:9px}
-.featuregrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.featurecard{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:13px;cursor:pointer}
-.featurecard .ico{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:13px;margin-bottom:8px;background:rgba(156,124,62,.14);border-radius:4px;color:var(--brass-deep)}
-.featurecard b{display:block;font-weight:600}
-.featurecard small{display:block;color:var(--soft);line-height:1.4;margin-top:4px}
-.tracker{display:grid;gap:8px}
-.jobrow{display:grid;grid-template-columns:1.4fr .7fr .7fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:4px;padding:10px;background:var(--card)}
-.statuspill{border-radius:999px;padding:4px 8px;font-size:9px;background:var(--forest2);color:var(--forest);width:max-content}
-
-@media(max-width:430px){.jobrow{grid-template-columns:1fr auto}.jobrow>small{font-size:8px}.actionbar{grid-template-columns:1fr 1fr}.tmplgrid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr 1fr}}
-@media(max-width:350px){.grid,.tmplgrid,.actionbar{grid-template-columns:1fr}.two{grid-template-columns:1fr}.nav-label{display:none}.nav i{margin-bottom:0;font-size:17px}.nav button{padding:11px 2px}}
-@media(max-width:700px){.metricgrid{grid-template-columns:repeat(2,1fr)}.ai-actions,.featuregrid{grid-template-columns:1fr}.jobrow{grid-template-columns:1fr 1fr}.change{grid-template-columns:1fr}}
-@media(max-width:410px){.phone{height:840px}}
-@media print{body>*{display:none!important}#printArea{display:block!important}.paper{margin:0 auto!important;box-shadow:none!important}}
-
-/* ===== Pro controls (fonts / colors) ===== */
-.font-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
-.font-option,.color-option{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:4px;padding:9px;text-align:left;font-size:10px;cursor:pointer}
-.font-option.active,.color-option.active{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy)}
-.color-row{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:8px}
-.color-swatch{height:28px;border-radius:4px;border:2px solid transparent;cursor:pointer}
-.color-swatch.active{border-color:var(--ink);box-shadow:0 0 0 1px var(--paper)}
-.pro-badge{display:inline-block;background:var(--forest2);color:var(--forest);border-radius:999px;padding:3px 8px;font:600 9px 'IBM Plex Mono',monospace;margin-left:5px}
-.premium-disabled{display:none!important}
-.template-controls{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:12px;margin:10px 18px}
-.template-controls h4{font:600 14px 'Fraunces',Georgia,serif;margin:0 0 4px}
-.template-controls small{color:var(--soft);font-size:9px}
-.resume-preview-wrap{display:flex;justify-content:center;width:100%}
-.paper{font-family:var(--resume-font);color:var(--resume-text)}
-.paper h2{color:var(--resume-heading)}
-.paper p,.paper li{color:var(--resume-text)}
-@media(min-width:701px){body{padding-top:22px}.rig{max-width:900px}.phone{height:900px}.screen{border-radius:22px}.tmplgrid{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:repeat(3,1fr)}.featuregrid{grid-template-columns:repeat(3,1fr)}.metricgrid{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:420px){.font-grid{grid-template-columns:1fr 1fr}.color-row{grid-template-columns:repeat(5,1fr)}}
-
-/* ===== Live Preview Studio ===== */
-.preview-studio{padding:10px 14px 28px;position:relative}
-.preview-mode{display:none}
-.preview-meta{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:7px 0;color:var(--faint);font:9px 'IBM Plex Mono',monospace}
-.preview-tools{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 52px;gap:8px;align-items:start}
-.preview-stage{background:var(--paper2);border:1px solid var(--line);border-radius:4px;padding:9px;overflow:auto;min-height:420px;min-width:0;scrollbar-width:thin}
-.preview-stage .paper{transform-origin:top center;transition:transform .15s ease;margin:8px auto}
-.preview-info{background:var(--forest2);color:var(--forest);border-radius:4px;padding:8px 10px;font-size:9.5px;line-height:1.4;margin-top:9px}
-.preview-below-actions{margin-top:10px}
-.preview-tool-hint{font-size:9px;color:var(--faint);text-align:center;padding:4px 8px}
-
-.preview-folder-rail{display:flex;flex-direction:column;gap:6px;position:sticky;top:8px;width:52px;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .14s ease}
-.preview-folder-rail.open{visibility:visible;opacity:1;pointer-events:auto}
-.preview-folder{position:relative;width:52px;min-height:54px;border:1px solid var(--line);background:var(--card);color:var(--soft);border-radius:4px;padding:7px 3px 6px;font-size:8px;font-weight:700;line-height:1.05;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
-.preview-folder.active{color:var(--navy);border-color:var(--navy);background:var(--paper2)}
-.preview-rail-sep{height:1px;background:var(--line);margin:2px 6px}
-.preview-folder .folder-icon{display:block;font-size:14px;line-height:1}
-
-.preview-feature-drawer{position:absolute;right:60px;top:0;width:min(320px,calc(100% - 66px));max-height:min(560px,calc(100vh - 180px));overflow:auto;display:none;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:11px;z-index:20}
-.preview-feature-drawer.open{display:block;animation:previewFly .14s ease-out}
-@keyframes previewFly{from{opacity:0;transform:translateX(6px)}to{opacity:1;transform:none}}
-.preview-feature-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 2px 9px;margin-bottom:8px;border-bottom:1px solid var(--line);position:sticky;top:-11px;background:var(--card);z-index:2}
-.preview-feature-head b{font:600 12px 'Fraunces',Georgia,serif}
-.preview-feature-head small{font-size:8px;color:var(--faint)}
-.preview-feature-close{width:26px;height:26px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:4px;font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center;flex:0 0 auto}
-.preview-feature-body{display:block}
-.preview-feature-body .fab-section,.preview-fab-panel .fab-section{border:0;padding:0;margin:0}
-.preview-feature-body .fab-grid{margin:0}
-.flyout-block{padding:0}
-.flyout-title{font-size:9.5px;font-weight:700;color:var(--soft);margin:0 0 7px;font-family:'IBM Plex Mono',monospace}
-.flyout-title small{float:right;font-weight:500;color:var(--faint)}
-
-.fab-section{margin:8px 0}
-.fab-label{font-size:8px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin:0 0 5px}
-.fab-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-.fab-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
-.fab-btn{min-height:32px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:4px;padding:6px 5px;font-size:9px;font-weight:600;cursor:pointer}
-.fab-btn.primary{background:var(--navy);color:var(--paper);border-color:var(--navy)}
-.fab-btn.active{background:var(--paper2);color:var(--navy);border-color:var(--navy)}
-.fab-control{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:7px}
-.fab-control label{display:block;font-size:8px;color:var(--soft);font-weight:700;margin-bottom:4px}
-.fab-control select,.fab-control input[type=color]{width:100%;min-height:29px;border:1px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink);padding:4px;font-size:9px}
-.fab-swatches{display:flex;gap:5px;flex-wrap:wrap}
-.fab-swatches button{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer}
-.fab-swatches button.active{border-color:var(--ink)}
-.fab-status{font-size:8px;color:var(--faint);text-align:center;padding-top:6px;border-top:1px solid var(--line);margin-top:8px}
-
-.template-list{display:grid;gap:6px}
-.template-list-item{width:100%;display:grid;grid-template-columns:32px minmax(0,1fr) 14px;gap:8px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:4px;padding:7px}
-.template-list-item.active{border-color:var(--navy);background:var(--paper2)}
-.template-list-item b{font-size:9px;display:block}
-.template-list-item small{font-size:7px;color:var(--faint);display:block;margin-top:2px}
-.template-mini{width:32px;height:39px;border:1px solid var(--line);background:var(--paper2);padding:5px;display:block}
-.template-mini i{display:block;height:2px;background:var(--soft);opacity:.55;margin:4px 0;width:90%}
-.template-mini i:nth-child(2){width:65%}
-.template-mini i:nth-child(3){width:78%}
-.template-list-item .check{font-size:11px;color:var(--navy);text-align:center}
-
-.font-list{padding:0;overflow:visible}
-.font-list.compact{display:grid;grid-template-columns:1fr;gap:5px}
-.font-list.compact .font-option{display:grid;grid-template-columns:minmax(0,1fr) auto 14px;align-items:center;gap:7px;width:100%;margin:0;border:1px solid var(--line);background:var(--card);border-radius:4px;padding:8px 9px;text-align:left}
-.font-list.compact .font-option.active{border-color:var(--navy);background:var(--paper2)}
-.font-list.compact .font-sample{font-size:15px;line-height:1}
-.font-list.compact .font-name{font-size:7.5px;color:var(--faint);white-space:nowrap}
-.font-list.compact .check{font-size:10px;color:var(--navy);text-align:center}
-.custom-color{margin-top:6px}
-
-.preview-fab{position:absolute;right:14px;bottom:16px;z-index:32;width:42px;height:42px;border:1px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink);font-size:19px;font-weight:500;cursor:pointer}
-.preview-fab.open{background:var(--navy);color:var(--paper);border-color:var(--navy);transform:rotate(45deg)}
-.preview-fab-panel,.fab-backdrop{display:none!important}
-.font-sheet{position:absolute;inset:0;z-index:40;background:var(--paper);display:none;flex-direction:column}
-.font-sheet.open{display:flex}
-
-.dark .preview-fab{background:var(--card);color:var(--ink)}
-@media(max-width:700px){.preview-studio{padding:8px 10px 24px}.preview-tools{grid-template-columns:minmax(0,1fr) 44px;gap:6px}.preview-folder-rail{width:44px;gap:5px}.preview-folder{width:44px;min-height:50px;font-size:7.5px}.preview-folder .folder-icon{font-size:13px}.preview-feature-drawer{right:50px;width:min(290px,calc(100% - 58px));max-height:66vh;padding:9px}.preview-stage{min-height:calc(100vh - 250px)}}
-@media(max-width:390px){.preview-tools{grid-template-columns:minmax(0,1fr) 40px}.preview-folder-rail,.preview-folder{width:40px}.preview-folder{min-height:46px}.preview-feature-drawer{right:46px;width:calc(100% - 52px);max-height:64vh}}
-@media(min-width:701px) and (max-width:999px){.preview-folder-rail,.preview-folder{width:50px}.preview-feature-drawer{right:58px;width:min(320px,calc(100% - 66px));max-height:70vh}}
-@media(min-width:1000px){.preview-folder-rail,.preview-folder{width:56px}.preview-feature-drawer{right:64px;width:340px}.preview-stage{min-height:560px}}
-
-/* Full-page preview workspace */
-.view.active.preview-full{display:flex!important;flex-direction:column;min-height:100%}
-.preview-full .builder-head{display:none}
-.preview-full .toggle{margin:8px 14px 0;flex:0 0 auto}
-.preview-full #previewPane{display:block!important;flex:1;min-height:0;overflow:auto}
-.preview-full .builder-foot{display:none}
-.preview-full .preview-studio{height:100%;min-height:0}
-.preview-full .preview-stage{min-height:calc(100vh - 210px);background:transparent;display:flex;justify-content:center;align-items:flex-start;padding:4px 0 24px}
-.preview-full .preview-stage .paper{width:min(820px,92%);max-width:900px;margin:8px auto 22px}
-@media(min-width:701px){.preview-full .preview-stage{min-height:calc(100vh - 190px)}}
-@media(max-width:700px){.preview-full .preview-stage{min-height:calc(100vh - 225px)}.preview-full .preview-stage .paper{width:96%;max-width:none}}
-
-.home-tools{margin-top:4px}
-.home-tools .featurecard{min-height:80px}
-@media(max-width:700px){.home-tools{grid-template-columns:1fr 1fr!important}}
-
-/* Dark theme */
 .dark{--paper:#151920;--paper2:#1E242C;--ink:#EEEAE0;--soft:#ADB4BE;--faint:#767D88;--card:#1A1F27;--line:rgba(255,255,255,.13)}
-.dark .plan.best{background:#232016}
-.dark .mini{background:#fff}
 
-/* ===== Premium UI/UX layer ===== */
-/* Glassmorphism — overlays now show a frosted view of the screen behind them */
-.overlay{background:rgba(243,238,222,.72);backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);transform:translateY(14px);opacity:0;transition:transform .32s cubic-bezier(.22,1,.36,1),opacity .28s ease}
-.overlay.show{transform:translateY(0);opacity:1}
-.dark .overlay{background:rgba(21,25,32,.72)}
-.overlayhead{background:rgba(255,255,255,.35);backdrop-filter:blur(8px)}
-.dark .overlayhead{background:rgba(255,255,255,.05)}
-
-/* Animated gradient — primary CTA and the Career Hub hero shift color slowly */
-.primary,.aihero{background-size:220% 220%;animation:gradientDrift 9s ease infinite}
-.primary{background-image:linear-gradient(120deg,var(--navy),var(--navy2),var(--navy))}
-.aihero{background-image:linear-gradient(120deg,var(--ink),var(--navy2),var(--ink))}
-@keyframes gradientDrift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-
-/* Pulse glow — the two main calls-to-action softly pulse to draw the eye */
-.primary,.preview-fab{animation:gradientDrift 9s ease infinite,pulseGlow 2.6s ease-in-out infinite}
-@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(156,124,62,.35)}50%{box-shadow:0 0 0 7px rgba(156,124,62,0)}}
-
-/* Floating element — the unlock seal drifts gently */
-.seal{animation:floaty 3.2s ease-in-out infinite}
-@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-
-/* Shimmer loader — resume thumbnails read as a loading skeleton */
-.thumb{position:relative;overflow:hidden;background:linear-gradient(90deg,var(--paper2) 25%,#fff 37%,var(--paper2) 63%);background-size:400% 100%;animation:shimmer 2.4s ease-in-out infinite}
-@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
-
-/* Scale-in — home dashboard cards ease in on load, staggered */
-#home .grid .card,#home .home-tools .featurecard{animation:cardScaleIn .5s cubic-bezier(.22,1,.36,1) both}
-#home .grid .card:nth-child(1){animation-delay:.02s}
-#home .grid .card:nth-child(2){animation-delay:.07s}
-#home .grid .card:nth-child(3){animation-delay:.12s}
-#home .grid .card:nth-child(4){animation-delay:.17s}
-#home .grid .card:nth-child(5){animation-delay:.22s}
-#home .grid .card:nth-child(6){animation-delay:.27s}
-@keyframes cardScaleIn{from{opacity:0;transform:scale(.92) translateY(6px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.primary,.aihero,.preview-fab,.seal,.thumb,#home .grid .card,#home .home-tools .featurecard{animation:none}}
-
-/* Hover scale — Hover.css utility classes are added directly on the home cards; this rule
-   extends the same lift-and-scale feel to the rest of the app's interactive surfaces */
-.featurecard,.ai-action,.chip,.outline,.pay,.metric,.tmpl,.suggest,.jobrow,.row{transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s ease}
-.featurecard:hover,.ai-action:hover,.chip:hover,.outline:hover,.pay:hover,.metric:hover,.tmpl:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 10px 24px rgba(10,12,16,.14)}
+@media(max-width:430px){.grid{grid-template-columns:1fr}}
+@media(max-width:350px){.grid{grid-template-columns:1fr}}
+@media print{body>*{display:none!important}#printArea{display:block!important}}
 </style>
 </head>
 <body data-premium-preview="free">
-<div class="rig"><div class="label">ResuMate &middot; interactive preview</div><div class="phone"><div class="screen" id="screen">
-<div class="notch"></div><div class="status"><span>9:41</span><span>LTE &middot; 100%</span></div>
-<div class="bar"><div class="brand">Resu<b>Mate</b></div><div><div class="tag" id="tag">Home</div><div id="saveState" class="hint" style="text-align:right"></div></div></div>
+<div class="rig">
+<div class="screen" id="screen">
+<div class="status"><span>9:41</span><span>LTE · 100%</span></div>
+<div class="bar"><div class="brand">Resu<b>Mate</b></div><div><div class="tag" id="tag">Home</div></div></div>
 <div class="content">
-<section class="view active" id="home"><div class="pad"><div class="eyebrow" data-aos="fade-up" data-aos-duration="500">Good evening</div><div class="hero animate__animated animate__fadeInUp">Let's get you<br>shortlisted, <span id="heroName">Aarav</span>.</div><button class="primary hvr-grow" onclick="go('builder')" data-aos="zoom-in" data-aos-delay="80"><i class="fa-solid fa-plus" style="margin-right:8px"></i>New resume<small>Start, edit, tailor or duplicate a resume</small></button><div class="grid"><div class="card hvr-grow" onclick="go('resumes')"><div class="icon"><i class="fa-solid fa-folder-open"></i></div><strong>My Resumes</strong><small>Saved versions &middot; autosave</small></div><div class="card hvr-grow" onclick="go('score')"><div class="icon"><i class="fa-solid fa-gauge-high"></i></div><strong>ATS Score</strong><small>Readiness, keywords &amp; formatting</small></div><div class="card hvr-grow" onclick="go('templates')"><div class="icon"><i class="fa-solid fa-table-cells"></i></div><strong>Templates</strong><small>10 approved template options</small></div><div class="card hvr-grow" onclick="openAI()"><div class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div><strong>AI Assistant</strong><small>Rewrite, improve and quantify</small></div><div class="card hvr-grow" onclick="importResume()"><div class="icon"><i class="fa-solid fa-file-import"></i></div><strong>Import Resume</strong><small>Paste existing resume content</small></div><div class="card hvr-grow" onclick="go('career')"><div class="icon"><i class="fa-solid fa-briefcase"></i></div><strong>Career Hub</strong><small>Tailoring, applications &amp; interview</small></div></div><div class="section">Quick actions</div><div class="featuregrid home-tools"><div class="featurecard hvr-grow" onclick="openDoctor()"><div class="ico"><i class="fa-solid fa-stethoscope"></i></div><b>Resume Doctor</b><small>Find weak bullets, gaps and vague claims.</small></div><div class="featurecard hvr-grow" onclick="openInterview()"><div class="ico"><i class="fa-solid fa-comments"></i></div><b>Interview Coach</b><small>Practice role-specific interview questions.</small></div><div class="featurecard hvr-grow" onclick="openPortfolio()"><div class="ico"><i class="fa-solid fa-arrow-up-right-from-square"></i></div><b>Public Portfolio</b><small>Preview a shareable professional profile.</small></div><div class="featurecard hvr-grow" onclick="addJob()"><div class="ico"><i class="fa-solid fa-plus"></i></div><b>Add Application</b><small>Track roles, interviews and offers.</small></div></div><div class="section">Recent</div><div id="homeRecent"></div><div class="section">Application Tracker</div><div id="homeTracker" class="tracker"></div><div class="banner hvr-grow" onclick="openPremium()"><div class="seal">M</div><div><b>All ResuMate Pro features unlocked</b><br><small>Premium templates &middot; AI review &middot; unlimited versions</small></div></div></div></section>
-<section class="view" id="builder"><div class="builder-head"><div class="steps" id="steps"></div><div class="stepmeta"><h3 id="stepTitle"></h3><small id="stepCount"></small></div></div><div class="toggle"><button class="on" id="editTab" onclick="builderMode('edit')">Edit</button><button id="previewTab" onclick="builderMode('preview')">Live Preview</button></div><div id="editPane" class="form"></div><div id="previewPane" style="display:none"></div><div class="builder-foot"><button onclick="stepPrev()">Back</button><button class="next" onclick="stepNext()">Continue</button></div></section>
-<section class="view" id="resumes"><div class="pad"><div class="eyebrow">Library</div><h2 class="serif">My Resumes</h2><div class="actionbar"><button class="outline" onclick="newResume()">+ New Resume</button><button class="outline" onclick="importResume()">Import</button></div><div class="section">Saved versions</div><div id="resumeList"></div><div class="section">Version manager</div><div class="actionbar"><button class="outline" onclick="saveVersion()">+ Save current version</button><button class="outline" onclick="renderVersionManager()">Refresh versions</button></div><div id="versionManager" class="tracker"></div><div class="section">File actions</div><div class="grid"><div class="card hvr-grow" onclick="duplicateResume()"><div class="icon"><i class="fa-regular fa-clone"></i></div><strong>Duplicate</strong><small>Copy current draft</small></div><div class="card hvr-grow" onclick="exportJSON()"><div class="icon"><i class="fa-solid fa-download"></i></div><strong>Backup JSON</strong><small>Export editable data</small></div><div class="card hvr-grow" onclick="exportPDF()"><div class="icon"><i class="fa-solid fa-file-pdf"></i></div><strong>Export PDF</strong><small>Print-ready A4</small></div><div class="card hvr-grow" onclick="resetDraft()"><div class="icon danger"><i class="fa-solid fa-rotate-left"></i></div><strong>Reset Draft</strong><small>Restore sample data</small></div></div></div></section>
-<section class="view" id="templates"><div class="templates"><div class="filters"><button class="chip active" onclick="filterTemplates('all',this)">All 10</button><button class="chip" onclick="filterTemplates('free',this)">Free</button><button class="chip" onclick="filterTemplates('premium',this)">Premium</button><button class="chip" onclick="filterTemplates('ats',this)">ATS-safe</button></div><div class="tmplgrid" id="tmplgrid"></div></div></section>
-<section class="view" id="score"><div class="pad" id="scorePad"></div></section>
-<section class="view" id="career"><div class="pad"><div class="eyebrow">AI career copilot</div><h2 class="serif">Career Hub</h2><div class="aihub"><div class="aihero"><span class="badge2" style="border-color:rgba(255,255,255,.3);color:#fff">Bring your own free AI key</span><h3>One resume. One job-winning workflow.</h3><p>Analyze a job, tailor the resume, diagnose weak areas, prepare for interviews and track applications.</p><div class="ai-actions"><button class="ai-action" onclick="go('builder')"><b>Build / Edit</b><small>Open 8-step builder</small></button><button class="ai-action" onclick="go('score')"><b>Match a Job</b><small>Run ATS + JD analysis</small></button><button class="ai-action" onclick="openTailor()"><b>Tailor Resume</b><small>Create a targeted version</small></button><button class="ai-action" onclick="openInterview()"><b>Interview Coach</b><small>Practice target-role questions</small></button></div></div><div class="metricgrid"><div class="metric"><b id="hubScore">0</b><small>Resume score</small></div><div class="metric"><b id="hubSkills">0</b><small>Skills tracked</small></div><div class="metric"><b id="hubVersions">0</b><small>Versions</small></div><div class="metric"><b id="hubJobs">0</b><small>Applications</small></div></div><div class="section">AI tools</div><div class="featuregrid"><div class="featurecard" onclick="go('score')"><div class="ico"><i class="fa-solid fa-gauge-high"></i></div><b>ATS Analyzer</b><small>Readiness, completeness, keywords and job match.</small></div><div class="featurecard" onclick="openTailor()"><div class="ico"><i class="fa-solid fa-bolt"></i></div><b>AI Resume Tailoring</b><small>Create job-specific changes with review.</small></div><div class="featurecard" onclick="openDoctor()"><div class="ico"><i class="fa-solid fa-stethoscope"></i></div><b>Resume Doctor</b><small>Find weak bullets, vague claims and gaps.</small></div><div class="featurecard" onclick="go('resumes')"><div class="ico"><i class="fa-solid fa-clock-rotate-left"></i></div><b>Version Manager</b><small>Keep separate versions by target role.</small></div><div class="featurecard" onclick="openInterview()"><div class="ico"><i class="fa-solid fa-comments"></i></div><b>Interview Coach</b><small>HR, behavioral, technical and managerial practice.</small></div><div class="featurecard" onclick="openPortfolio()"><div class="ico"><i class="fa-solid fa-arrow-up-right-from-square"></i></div><b>Public Portfolio</b><small>Preview a shareable professional profile.</small></div></div><div class="section">Application Tracker</div><div class="actionbar"><button class="outline" onclick="addJob()">+ Add application</button><button class="outline" onclick="openTailor()">Tailor for application</button></div><div id="tracker" class="tracker"></div></div></section>
-<section class="view settings" id="settings"><div class="pad" id="settingsPad"></div></section>
+<section class="view active" id="home">
+  <div class="pad">
+    <h2 class="serif">ResuMate</h2>
+    <p>Professional Resume Builder for Android</p>
+    <button class="primary" onclick="alert('App Loaded Successfully!')">
+      Get Started
+      <small>Build your resume now</small>
+    </button>
+  </div>
+</section>
+<section class="view" id="builder"><div class="pad"><h2>Builder</h2><p>Resume builder coming soon...</p></div></section>
+<section class="view" id="templates"><div class="pad"><h2>Templates</h2><p>Templates coming soon...</p></div></section>
+<section class="view" id="settings"><div class="pad"><h2>Settings</h2><p>Settings coming soon...</p></div></section>
 </div>
-<div class="nav"><button id="nav-home" class="active" onclick="go('home')"><i class="fa-solid fa-house"></i><span class="nav-label">Home</span></button><button id="nav-builder" onclick="go('builder')"><i class="fa-solid fa-pen-ruler"></i><span class="nav-label">Builder</span></button><button id="nav-resumes" onclick="go('resumes')"><i class="fa-solid fa-layer-group"></i><span class="nav-label">Resumes</span></button><button id="nav-templates" onclick="go('templates')"><i class="fa-solid fa-table-cells"></i><span class="nav-label">Templates</span></button><button id="nav-score" onclick="go('score')"><i class="fa-solid fa-gauge-high"></i><span class="nav-label">Score</span></button><button id="nav-career" onclick="go('career')"><i class="fa-solid fa-briefcase"></i><span class="nav-label">Career</span></button><button id="nav-settings" onclick="go('settings')"><i class="fa-solid fa-gear"></i><span class="nav-label">Settings</span></button></div>
-<div id="welcome" class="overlay" style="z-index:60"><div class="overlaybody" style="display:flex;flex-direction:column;justify-content:center;height:100%;text-align:center;padding:30px 26px"><div class="seal" style="margin:0 auto 18px">M</div><div class="eyebrow">Welcome to ResuMate</div><h2 class="serif" style="font-size:25px;margin:6px 0 10px">What should we call you?</h2><p style="color:var(--soft);font-size:11.5px;line-height:1.6;margin-bottom:20px">Your name personalizes the dashboard, resume, portfolio and every export in this preview.</p><div class="field" style="text-align:left"><label>Full name</label><input id="welcomeName" placeholder="e.g. Aarav Mehta" onkeydown="if(event.key==='Enter')completeOnboarding()"></div><button class="pay hvr-grow" onclick="completeOnboarding()">Continue</button><button class="outline" style="margin-top:10px" onclick="skipOnboarding()">Continue with sample profile</button></div></div>
-<div id="premium" class="overlay"><div class="overlayhead"><span class="tag">ResuMate Pro &middot; Unlocked</span><button class="close" onclick="closeOverlay('premium')">&times;</button></div><div class="overlaybody"><div class="seal" style="margin:auto">&#10003;</div><h2 class="serif" style="text-align:center">All Pro features are free</h2><p style="text-align:center;color:var(--soft);font-size:11px">Premium billing is disabled for this preview. Pricing and entitlement data remain stored for a future production switch.</p><div class="plan best"><b>FREE ACCESS &middot; CURRENT PREVIEW</b><br><small>All templates &middot; AI tools &middot; unlimited versions &middot; no watermark &middot; font &amp; text color controls</small></div><p style="font-size:11px;line-height:1.8">&#10003; 10 templates<br>&#10003; Unlimited versions<br>&#10003; AI review &amp; tailoring<br>&#10003; Advanced JD matching<br>&#10003; Font selection<br>&#10003; Resume text colors<br>&#10003; No watermark</p><button class="pay" onclick="closeOverlay('premium');toast('All premium features are unlocked')">Continue</button></div></div>
-<div id="ai" class="overlay"><div class="overlayhead"><span class="tag">AI Assistant</span><button class="close" onclick="closeOverlay('ai')">&times;</button></div><div class="overlaybody"><h2 class="serif">Improve your resume</h2><p style="font-size:11px;color:var(--soft)">AI calls use the free Groq/OpenRouter key you set in Settings. Local resume data stays local until an AI request is sent.</p><div class="field"><label>Text to improve</label><textarea id="aiInput" placeholder="Paste a summary or bullet&hellip;"></textarea></div><div class="grid"><button class="outline" onclick="aiRewrite('bullet')">Rewrite bullet</button><button class="outline" onclick="aiRewrite('summary')">Improve summary</button><button class="outline" onclick="aiRewrite('keywords')">Suggest keywords</button><button class="outline" onclick="aiRewrite('quantify')">Metrics ideas</button></div><div id="aiResult" class="suggest" style="display:none"></div></div></div>
-<div id="import" class="overlay"><div class="overlayhead"><span class="tag">Import Resume</span><button class="close" onclick="closeOverlay('import')">&times;</button></div><div class="overlaybody"><h2 class="serif">Bring your existing resume</h2><p style="font-size:11px;color:var(--soft)">Paste text and ResuMate will create a draft.</p><div class="field"><label>Resume text</label><textarea id="importText" style="height:210px" placeholder="Paste resume text here&hellip;"></textarea></div><button class="pay" onclick="doTextImport()">Import to Builder</button></div></div>
-<div id="tailor" class="overlay"><div class="overlayhead"><span class="tag">AI Resume Tailoring</span><button class="close" onclick="closeOverlay('tailor')">&times;</button></div><div class="overlaybody"><h2 class="serif">Tailor for a job</h2><div class="field"><label>Job title</label><input id="tailorTitle"></div><div class="field"><label>Job description</label><textarea id="tailorJD" style="height:190px" placeholder="Paste complete job description&hellip;"></textarea></div><button class="pay" onclick="runTailor()">Analyze &amp; Create Plan</button><div id="tailorResult"></div></div></div>
-<div id="doctor" class="overlay"><div class="overlayhead"><span class="tag">Resume Doctor</span><button class="close" onclick="closeOverlay('doctor')">&times;</button></div><div class="overlaybody"><h2 class="serif">Diagnose your resume</h2><p style="font-size:11px;color:var(--soft)">Find weak claims, vague language, missing metrics and structural gaps.</p><button class="pay" onclick="runDoctor()">Run full diagnosis</button><div id="doctorResult"></div></div></div>
-<div id="interview" class="overlay"><div class="overlayhead"><span class="tag">Interview Coach</span><button class="close" onclick="closeOverlay('interview')">&times;</button></div><div class="overlaybody"><h2 class="serif">Practice interview</h2><div class="field"><label>Target role</label><input id="interviewRole"></div><div class="field"><label>Interview type</label><select id="interviewType"><option>Mixed</option><option>HR / Behavioral</option><option>Technical</option><option>Managerial</option></select></div><button class="pay" onclick="runInterview()">Generate questions</button><div id="interviewResult"></div></div></div>
-<div id="portfolio" class="overlay"><div class="overlayhead"><span class="tag">Public profile</span><button class="close" onclick="closeOverlay('portfolio')">&times;</button></div><div class="overlaybody"><h2 class="serif">Portfolio preview</h2><div id="portfolioResult"></div><button class="pay" onclick="sharePortfolio()">Copy public profile</button></div></div>
-<div id="changes" class="overlay"><div class="overlayhead"><span class="tag">AI changes</span><button class="close" onclick="closeOverlay('changes')">&times;</button></div><div class="overlaybody"><h2 class="serif">Review before applying</h2><div id="changesResult"></div></div></div>
-<div id="toast" class="toast"></div>
-</div></div></div>
-<div id="printArea" style="display:none"></div>
+<div class="nav">
+  <button id="nav-home" class="active" onclick="go('home')"><i class="fa-solid fa-house"></i></button>
+  <button id="nav-builder" onclick="go('builder')"><i class="fa-solid fa-pen"></i></button>
+  <button id="nav-templates" onclick="go('templates')"><i class="fa-solid fa-folder"></i></button>
+  <button id="nav-settings" onclick="go('settings')"><i class="fa-solid fa-gear"></i></button>
+</div>
+</div>
+</div>
+
 <script>
-
-const KEY='resumate.final.v2';
-const defaultState={onboarded:false,aiProvider:'groq',aiKey:'',aiModel:'openai/gpt-oss-120b',profile:{name:'Aarav Mehta',role:'Wealth Management Professional',email:'aarav.mehta@email.com',phone:'+91 98xxxxxxx',location:'Noida, India',linkedin:''},summary:'Wealth-management professional focused on client relationships, portfolio solutions, mutual funds, AUM growth and investment advisory. Experienced in client servicing, partner engagement and financial-product positioning.',experience:[{company:'Prudent Corporate Pvt. Ltd.',role:'Assistant Manager — Wealth Management',from:'2024',to:'Present',bullets:['Managed and serviced investment relationships across mutual funds and wealth-management solutions','Supported AUM growth through SIP, lump-sum and portfolio review conversations','Coordinated client KYC, transaction processing, documentation and partner support']}],education:[{school:'Agra University',degree:'Graduate',from:'',to:''}],skills:['Wealth Management','Mutual Funds','Portfolio Management','AUM Growth','Client Relationship Management','SIP','Investment Advisory','Financial Products','Power BI','SQL','Data Analytics'],projects:[],certifications:[{name:'Mutual Fund / Wealth Management Certifications',issuer:'Industry Certification',year:'2025'}],additional:{languages:'English, Hindi',awards:'',volunteer:''},template:'Ledger',theme:'light',accent:'#1E3A5F',watermark:false,font:'Inter',textColor:'#181A1F',headingColor:'#181A1F',billing:{enforcePremium:false,plans:{monthly:149,yearly:899,lifetime:1999}},resumes:[{id:1,name:'Aarav Mehta — Wealth Management',template:'Ledger',score:86,updated:'today'},{id:2,name:'Aarav Mehta — Client Advisory',template:'Ink',score:79,updated:'yesterday'}],jobs:[]};
-const premiumCatalog={enabledFeatures:['All templates','Unlimited versions','AI review & tailoring','Advanced JD matching','No watermark','Font controls','Resume text colors','Premium layouts','Portfolio preview','Interview Coach','Application Tracker','JSON backup/import'],plans:{monthly:149,yearly:899,lifetime:1999}};
-let state=load(),step=0,mode='edit',pendingTailor=null; state.versions=state.versions||state.resumes.map(r=>({...r})); state.billing=state.billing||{enforcePremium:false,plans:{monthly:149,yearly:899,lifetime:1999}}; state.font=state.font||'Inter'; state.previewZoom=state.previewZoom||100; state.previewView=state.previewView||'resume'; state.previewFeature=state.previewFeature||''; state.previewFeatureOpen=state.previewFeatureOpen===true; state.previewFabOpen=state.previewFabOpen===true; state.textColor=state.textColor||'#181A1F'; state.headingColor=state.headingColor||state.textColor; state.watermark=false;
-function clone(x){return JSON.parse(JSON.stringify(x))}
-// Premium access is intentionally disabled for this preview; billing plans stay in state.billing for a future production switch.
-const PREMIUM_PREVIEW_FREE=true;
-function premiumAllowed(){return PREMIUM_PREVIEW_FREE||!state.billing?.enforcePremium}function load(){try{const saved=JSON.parse(localStorage.getItem(KEY)||'{}');const merged=Object.assign(clone(defaultState),saved);merged.versions=merged.versions||merged.resumes.map(r=>({...r}));return merged}catch(e){const d=clone(defaultState);d.versions=d.resumes.map(r=>({...r}));return d}}function save(){localStorage.setItem(KEY,JSON.stringify(state));updateSavedLabel();renderHome();renderCareer()}function updateSavedLabel(){const e=document.getElementById('saveState');if(e)e.textContent='Saved locally · '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>t.classList.remove('show'),1900)}function openOverlay(id){document.getElementById(id).classList.add('show')}function closeOverlay(id){document.getElementById(id).classList.remove('show')}function openPremium(){openOverlay('premium')}function openAI(){openOverlay('ai')}function importResume(){openOverlay('import')}function go(name){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(name).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));const n=document.getElementById('nav-'+name);if(n)n.classList.add('active');document.getElementById('tag').textContent=name==='score'?'Resume Score':name[0].toUpperCase()+name.slice(1);if(name==='builder')renderBuilder();if(name==='resumes')renderResumes();if(name==='templates')renderTemplates('all');if(name==='score')renderScore();if(name==='settings')renderSettings();if(name==='home')renderHome();if(name==='career')renderCareer()}
-function setPath(path,val){const p=path.split('.');let o=state;for(let i=0;i<p.length-1;i++)o=o[p[i]];o[p.at(-1)]=val;save();renderPreviewIfNeeded()}function input(path,label,value,ph=''){return `<div class="field"><label>${label}</label><input data-bind="${path}" value="${esc(value)}" placeholder="${ph}" oninput="bind(this)"></div>`}function area(path,label,value){return `<div class="field"><label>${label}</label><textarea data-bind="${path}" oninput="bind(this)">${esc(value)}</textarea></div>`}function bind(el){const p=el.dataset.bind;if(!p)return;setPath(p,el.value)}
-const steps=[{title:'Personal Info',render:()=>`<div class="two">${input('profile.name','Full name',state.profile.name)}${input('profile.role','Target role',state.profile.role)}</div><div class="two">${input('profile.email','Email',state.profile.email)}${input('profile.phone','Phone',state.profile.phone)}</div>${input('profile.location','Location',state.profile.location)}${input('profile.linkedin','LinkedIn / Portfolio',state.profile.linkedin,'https://…')}<div class="ai">✓ Contact details are live-linked to the preview and saved locally.</div>`},{title:'Summary',render:()=>`${area('summary','Professional summary',state.summary)}<div class="ai">✦ Keep the summary focused on role, domain, scale, strengths and measurable impact.</div><button class="outline" onclick="useAISuggestion('summary')">Improve with AI</button>`},{title:'Experience',render:()=>`${state.experience.map((x,i)=>`<div class="item"><div class="itemhead"><span>${esc(x.company||'New experience')} — ${esc(x.role||'Role')}</span><button class="mini-btn" onclick="removeItem('experience',${i})">Remove</button></div><div class="two">${input(`experience.${i}.company`,'Company',x.company)}${input(`experience.${i}.role`,'Role',x.role)}</div><div class="two">${input(`experience.${i}.from`,'Start',x.from)}${input(`experience.${i}.to`,'End',x.to)}</div>${x.bullets.map((b,j)=>`<div class="bullet"><input data-bullet="${i}:${j}" value="${esc(b)}" oninput="bindBullet(this)"><button class="mini-btn" onclick="aiBullet(${i},${j})">AI</button></div>`).join('')}<button class="mini-btn" style="margin-top:6px" onclick="addBullet(${i})">＋ Bullet</button></div>`).join('')}<button class="outline" onclick="addItem('experience')">＋ Add Experience</button>`},{title:'Education',render:()=>`${state.education.map((x,i)=>`<div class="item"><div class="itemhead"><span>${esc(x.school||'New education')}</span><button class="mini-btn" onclick="removeItem('education',${i})">Remove</button></div>${input(`education.${i}.school`,'Institution',x.school)}${input(`education.${i}.degree`,'Degree',x.degree)}<div class="two">${input(`education.${i}.from`,'Start',x.from)}${input(`education.${i}.to`,'End',x.to)}</div></div>`).join('')}<button class="outline" onclick="addItem('education')">＋ Add Education</button>`},{title:'Skills',render:()=>`<div class="field"><label>Skills — comma separated</label><input value="${esc(state.skills.join(', '))}" oninput="bindSkills(this)"></div><div class="hint">Use only role-relevant skills supported by your actual experience.</div><div class="ai">✦ ${state.skills.length} skills tracked.</div><button class="outline" onclick="openAI()">✦ Open AI Assistant</button>`},{title:'Projects',render:()=>`${state.projects.map((x,i)=>`<div class="item"><div class="itemhead"><span>${esc(x.name||'New project')}</span><button class="mini-btn" onclick="removeItem('projects',${i})">Remove</button></div>${input(`projects.${i}.name`,'Project name',x.name)}${area(`projects.${i}.description`,'Description',x.description)}${x.bullets.map((b,j)=>`<div class="bullet"><input data-project-bullet="${i}:${j}" value="${esc(b)}" oninput="bindProjectBullet(this)"></div>`).join('')}<button class="mini-btn" onclick="addProjectBullet(${i})">＋ Bullet</button></div>`).join('')}<button class="outline" onclick="addItem('projects')">＋ Add Project</button>`},{title:'Certifications',render:()=>`${state.certifications.map((x,i)=>`<div class="item"><div class="itemhead"><span>${esc(x.name||'Certification')}</span><button class="mini-btn" onclick="removeItem('certifications',${i})">Remove</button></div>${input(`certifications.${i}.name`,'Certification',x.name)}<div class="two">${input(`certifications.${i}.issuer`,'Issuer',x.issuer)}${input(`certifications.${i}.year`,'Year',x.year)}</div></div>`).join('')}<button class="outline" onclick="addItem('certifications')">＋ Add Certification</button>`},{title:'Additional Sections',render:()=>`${input('additional.languages','Languages',state.additional.languages)}${area('additional.awards','Awards',state.additional.awards)}${area('additional.volunteer','Volunteer work / Publications',state.additional.volunteer)}<div class="ai">✦ Optional sections appear only when populated.</div>`}];
-function bindSkills(el){state.skills=el.value.split(',').map(x=>x.trim()).filter(Boolean);save();renderPreviewIfNeeded()}function bindBullet(el){let [i,j]=el.dataset.bullet.split(':');state.experience[i].bullets[j]=el.value;save();renderPreviewIfNeeded()}function bindProjectBullet(el){let [i,j]=el.dataset.projectBullet.split(':');state.projects[i].bullets[j]=el.value;save();renderPreviewIfNeeded()}function addBullet(i){state.experience[i].bullets.push('');save();renderBuilder()}function addProjectBullet(i){state.projects[i].bullets.push('');save();renderBuilder()}function addItem(type){if(type==='experience')state.experience.push({company:'',role:'',from:'',to:'',bullets:['']});if(type==='education')state.education.push({school:'',degree:'',from:'',to:''});if(type==='projects')state.projects.push({name:'',description:'',bullets:['']});if(type==='certifications')state.certifications.push({name:'',issuer:'',year:''});save();renderBuilder()}function removeItem(type,i){if(confirm('Remove this section?')){state[type].splice(i,1);save();renderBuilder()}}function stepNext(){if(step<steps.length-1){step++;renderBuilder()}else{save();toast('8-step resume completed');go('score')}}function stepPrev(){if(step>0){step--;renderBuilder()}else go('home')}function builderMode(m){mode=m;renderBuilder()}function renderBuilder(){const builder=document.getElementById('builder');if(builder)builder.classList.toggle('preview-full',mode==='preview');document.getElementById('stepTitle').textContent=steps[step].title;document.getElementById('stepCount').textContent=`STEP ${step+1} / 8`;document.getElementById('steps').innerHTML=steps.map((_,i)=>`<span class="${i<step?'done':i===step?'now':''}" onclick="step=${i};renderBuilder()"></span>`).join('');document.getElementById('editPane').innerHTML=steps[step].render();document.getElementById('editPane').style.display=mode==='edit'?'block':'none';document.getElementById('previewPane').style.display=mode==='preview'?'block':'none';document.getElementById('editTab').classList.toggle('on',mode==='edit');document.getElementById('previewTab').classList.toggle('on',mode==='preview');if(mode==='preview')renderPreview();updateSavedLabel()}
-function resumeHTML(){const p=state.profile,e=state.experience.filter(x=>x.company||x.role),edu=state.education.filter(x=>x.school),pr=state.projects.filter(x=>x.name),cert=state.certifications.filter(x=>x.name);return `<div class="paper template-${esc(state.template).toLowerCase()}" style="--resume-font:${esc(state.font||'Inter')};--resume-text:${esc(state.textColor||'#181A1F')};--resume-heading:${esc(state.headingColor||state.textColor||'#181A1F')}"><h2>${esc(p.name)}</h2><div class="role">${esc(p.role)}</div><div style="color:#888;margin:4px 0 12px">${esc([p.email,p.phone,p.location,p.linkedin].filter(Boolean).join(' · '))}</div>${state.summary?`<h5>SUMMARY</h5><p>${esc(state.summary)}</p>`:''}${e.length?`<h5>EXPERIENCE</h5>${e.map(x=>`<p><b>${esc(x.company)}</b> · ${esc(x.role)} <span style="float:right">${esc(x.from)} — ${esc(x.to)}</span></p><ul>${x.bullets.filter(Boolean).map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`).join('')}`:''}${edu.length?`<h5>EDUCATION</h5>${edu.map(x=>`<p><b>${esc(x.school)}</b> · ${esc(x.degree)} · ${esc(x.from)}–${esc(x.to)}</p>`).join('')}`:''}${pr.length?`<h5>PROJECTS</h5>${pr.map(x=>`<p><b>${esc(x.name)}</b> — ${esc(x.description)}</p><ul>${x.bullets.filter(Boolean).map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`).join('')}`:''}${state.skills.length?`<h5>SKILLS</h5><div class="skills">${state.skills.map(s=>`<span>${esc(s)}</span>`).join('')}</div>`:''}${cert.length?`<h5>CERTIFICATIONS</h5>${cert.map(x=>`<p>${esc(x.name)} · ${esc(x.issuer)} · ${esc(x.year)}</p>`).join('')}`:''}${state.additional.languages?`<h5>LANGUAGES</h5><p>${esc(state.additional.languages)}</p>`:''}${state.additional.awards?`<h5>AWARDS</h5><p>${esc(state.additional.awards)}</p>`:''}${state.additional.volunteer?`<h5>VOLUNTEER / PUBLICATIONS</h5><p>${esc(state.additional.volunteer)}</p>`:''}${state.watermark?`<div style="text-align:center;color:#999;font:8px monospace;margin-top:12px">MADE WITH RESUMATE — FREE TIER</div>`:''}</div>`}
-function renderPreview(){
- const pane=document.getElementById('previewPane');
- if(!pane)return;
- const fontList=['Inter','DM Sans','Manrope','Poppins','Montserrat','Roboto','Open Sans','Lato','Source Sans 3','IBM Plex Sans','Nunito','Raleway','Merriweather','Libre Baskerville','Playfair Display','Arial','Georgia','Times New Roman','Verdana','Trebuchet MS'];
- const colorList=['#181A1F','#1E3A5F','#3F6B4F','#6B3F3F','#5B4B7A','#7A4E1D','#334155','#111827'];
- const zoom=state.previewZoom||100;
- const view=state.previewView||'resume';
- const feature=state.previewFeature||'';
- const featureOpen=state.previewFeatureOpen===true;
- const featureLabel={view:'View',template:'Template',fonts:'Fonts',color:'Colors',export:'Export',ats:'ATS Score',tailor:'Tailor to JD',browse:'Browse Templates',save:'Save Version'}[feature]||'';
- const fontFamily=f=>f.includes(' ') ? `'${f}'` : f;
- const featureBody={
-  view:`<div class="flyout-block"><div class="flyout-title">Preview mode</div><div class="fab-grid three"><button class="fab-btn ${view==='resume'?'active':''}" onclick="setPreviewView('resume')">Resume</button><button class="fab-btn ${view==='ats'?'active':''}" onclick="setPreviewView('ats')">ATS View</button><button class="fab-btn" onclick="previewFullscreen()">⛶ Full</button><button class="fab-btn" onclick="previewZoom(-10)">− Zoom</button><button class="fab-btn" onclick="previewFit()">Fit</button><button class="fab-btn" onclick="previewZoom(10)">＋ Zoom</button></div></div>`,
-  template:`<div class="flyout-block"><div class="flyout-title">Templates <small>${templates.length} available</small></div><div class="template-list">${templates.map(t=>`<button class="template-list-item ${state.template===t[0]?'active':''}" onclick="setPreviewTemplate('${t[0]}')"><span class="template-mini"><i></i><i></i><i></i></span><span><b>${t[0]}</b><small>${t[2]?'ATS-safe':'Visual'} · Unlocked</small></span><span class="check">${state.template===t[0]?'✓':''}</span></button>`).join('')}</div></div>`,
-  fonts:`<div class="flyout-block"><div class="flyout-title">Resume fonts <small>20 choices</small></div><div class="font-list compact">${fontList.map(f=>`<button class="font-option ${state.font===f?'active':''}" onclick="setResumeFont('${f}')"><span class="font-sample" style="font-family:${fontFamily(f)},sans-serif">Aa</span><span class="font-name" style="font-family:${fontFamily(f)},sans-serif">${f}</span><span class="check">${state.font===f?'✓':''}</span></button>`).join('')}</div></div>`,
-  color:`<div class="flyout-block"><div class="flyout-title">Text color</div><div class="fab-control"><div class="fab-swatches">${colorList.map(c=>`<button title="${c}" class="${state.textColor===c?'active':''}" style="background:${c}" onclick="setResumeTextColor('${c}')"></button>`).join('')}</div></div><div class="fab-control custom-color"><label>Custom color</label><input type="color" value="${esc(state.textColor||'#181A1F')}" onchange="setResumeTextColor(this.value)"></div></div>`,
-  export:`<div class="flyout-block"><div class="flyout-title">Export & share</div><div class="fab-grid"><button class="fab-btn primary" onclick="exportPDF()">PDF / Print</button><button class="fab-btn" onclick="shareResume()">Share</button><button class="fab-btn" onclick="saveVersion()">Save version</button></div></div>`,
-  ats:`<div class="flyout-block"><div class="flyout-title">ATS Score</div><div class="metricgrid"><div class="metric"><b>${calculateScore()}</b><small>Current score</small></div><div class="metric"><b>${state.skills.length}</b><small>Skills</small></div></div><button class="fab-btn primary" style="width:100%;margin-top:8px" onclick="go('score')">Open full ATS analysis</button></div>`,
-  tailor:`<div class="flyout-block"><div class="flyout-title">Tailor to JD</div><div class="fab-status">Create a job-specific version and review suggested changes before applying them.</div><button class="fab-btn primary" style="width:100%;margin-top:8px" onclick="openTailor()">✦ Start tailoring</button></div>`,
-  browse:`<div class="flyout-block"><div class="flyout-title">Browse Templates</div><div class="fab-status">Explore all available resume layouts without leaving the editor.</div><button class="fab-btn primary" style="width:100%;margin-top:8px" onclick="go('templates')">▤ Open template library</button></div>`,
-  save:`<div class="flyout-block"><div class="flyout-title">Save Version</div><div class="fab-status">Keep a separate version for each target role.</div><button class="fab-btn primary" style="width:100%;margin-top:8px" onclick="saveVersion()">⌁ Save current version</button><button class="fab-btn" style="width:100%;margin-top:6px" onclick="go('resumes')">Open version library</button></div>`
- }[feature]||'';
- pane.innerHTML=`<div class="preview-studio">
-   <div class="preview-meta"><span>LIVE · Changes update instantly</span><span id="previewZoomLabel">${zoom}%</span></div>
-   <div class="preview-tools">
-    <div>
-      <div class="preview-stage" id="previewStage">${view==='resume'?resumeHTML():atsPreviewHTML()}</div>
-      <div class="preview-info">✓ Live preview · Choose a folder on the right for customization. ATS, tailoring, templates and saving are available in the side rail.</div>
-    </div>
-    <div class="preview-folder-rail ${state.previewFabOpen?'open':''}" aria-label="Preview and resume tools">
-      <button class="preview-folder ${feature==='view'?'active':''}" onclick="openPreviewFeature('view')"><span class="folder-icon">◫</span><span>View</span></button>
-      <button class="preview-folder ${feature==='template'?'active':''}" onclick="openPreviewFeature('template')"><span class="folder-icon">▤</span><span>Template</span></button>
-      <button class="preview-folder ${feature==='fonts'?'active':''}" onclick="openPreviewFeature('fonts')"><span class="folder-icon">Aa</span><span>Fonts</span></button>
-      <button class="preview-folder ${feature==='color'?'active':''}" onclick="openPreviewFeature('color')"><span class="folder-icon">●</span><span>Colors</span></button>
-      <button class="preview-folder ${feature==='export'?'active':''}" onclick="openPreviewFeature('export')"><span class="folder-icon">↥</span><span>Export</span></button>
-      <span class="preview-rail-sep"></span>
-      <button class="preview-folder ${feature==='ats'?'active':''}" onclick="openPreviewFeature('ats')"><span class="folder-icon">✓</span><span>ATS</span></button>
-      <button class="preview-folder ${feature==='tailor'?'active':''}" onclick="openPreviewFeature('tailor')"><span class="folder-icon">✦</span><span>Tailor</span></button>
-      <button class="preview-folder ${feature==='browse'?'active':''}" onclick="openPreviewFeature('browse')"><span class="folder-icon">⌑</span><span>Browse</span></button>
-      <button class="preview-folder ${feature==='save'?'active':''}" onclick="openPreviewFeature('save')"><span class="folder-icon">⌁</span><span>Save</span></button>
-    </div>
-    <div class="preview-feature-drawer ${featureOpen?'open':''}" id="previewFeatureDrawer">
-      <div class="preview-feature-head"><div><b>${featureLabel||'Preview controls'}</b><small>Tap another folder to switch</small></div><button class="preview-feature-close" type="button" aria-label="Close customization" onclick="closePreviewFeature()">×</button></div>
-      <div class="preview-feature-body">${featureBody||'<div class="fab-status" style="text-align:left">Select a folder to open its controls.</div>'}</div>
-    </div>
-   </div>
-   <div class="preview-below-actions"><div class="preview-tool-hint">Preview tools are in the side rail · Select any folder to open its fly-out panel.</div></div>
-   <button class="preview-fab" id="previewFab" aria-label="Open preview folders" aria-expanded="${state.previewFabOpen?'true':'false'}" onclick="togglePreviewFab()">+</button>
- </div>`;
- applyPreviewZoom();
- const _fab=document.getElementById('previewFab'),_rail=document.querySelector('.preview-folder-rail');
- if(_fab){_fab.classList.toggle('open',!!state.previewFabOpen);_fab.setAttribute('aria-expanded',state.previewFabOpen?'true':'false');}
- if(_rail){_rail.setAttribute('aria-hidden',state.previewFabOpen?'false':'true');}
+function go(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(view).classList.add('active');
+  document.getElementById('nav-' + view).classList.add('active');
+  document.getElementById('tag').textContent = view.charAt(0).toUpperCase() + view.slice(1);
 }
 
-function closePreviewFeature(){state.previewFeatureOpen=false;save();const drawer=document.getElementById('previewFeatureDrawer');if(drawer)drawer.classList.remove('open');document.querySelectorAll('.preview-folder').forEach(b=>b.classList.remove('active'));}
-function openPreviewFeature(name){
- state.previewFeature=name;
- state.previewFeatureOpen=true;
- save();
- renderPreview();
-}
-
-function openFontSheet(){const s=document.getElementById('fontSheet');if(s){s.classList.add('open');s.setAttribute('aria-hidden','false')}}
-function closeFontSheet(){const s=document.getElementById('fontSheet');if(s){s.classList.remove('open');s.setAttribute('aria-hidden','true')}}
-function togglePreviewFab(force){const fab=document.getElementById('previewFab');if(!fab)return;const open=typeof force==='boolean'?force:!state.previewFabOpen;state.previewFabOpen=open;save();fab.classList.toggle('open',open);fab.setAttribute('aria-expanded',open?'true':'false');const rail=document.querySelector('.preview-folder-rail');if(rail){rail.classList.toggle('open',open);rail.setAttribute('aria-hidden',open?'false':'true')}if(!open){state.previewFeatureOpen=false;const drawer=document.getElementById('previewFeatureDrawer');if(drawer)drawer.classList.remove('open')}}
-function closePreviewFab(){togglePreviewFab(false)}
-function renderPreviewIfNeeded(){if(mode==='preview')renderPreview()}
-function setPreviewView(v){state.previewView=v;save();renderPreview()}
-function setPreviewTemplate(t){state.template=t;save();renderPreview();toast(t+' template applied')}
-function previewZoom(delta){state.previewZoom=Math.max(60,Math.min(140,(state.previewZoom||100)+delta));save();applyPreviewZoom();const z=document.getElementById('previewZoomLabel');if(z)z.textContent=state.previewZoom+'%'}
-function previewFit(){state.previewZoom=100;save();applyPreviewZoom();const z=document.getElementById('previewZoomLabel');if(z)z.textContent='100%'}
-function applyPreviewZoom(){const p=document.querySelector('#previewStage .paper');if(p)p.style.transform='scale('+(state.previewZoom||100)/100+')'}
-function previewFullscreen(){const el=document.getElementById('previewStage');if(!el)return;if(document.fullscreenElement)document.exitFullscreen?.();else el.requestFullscreen?.()}
-function atsPreviewHTML(){const p=state.profile,e=state.experience.filter(x=>x.company||x.role);return `<div class="paper" style="font-family:Arial,sans-serif;color:#111;background:#fff"><h2 style="font-family:Arial,sans-serif">${esc(p.name)}</h2><div style="font-weight:700">${esc(p.role)}</div><p>${esc([p.email,p.phone,p.location,p.linkedin].filter(Boolean).join(' · '))}</p>${state.summary?`<h5 style="font-family:Arial,sans-serif">SUMMARY</h5><p>${esc(state.summary)}</p>`:''}${e.length?`<h5>EXPERIENCE</h5>${e.map(x=>`<p><b>${esc(x.company)}</b> · ${esc(x.role)} · ${esc(x.from)} — ${esc(x.to)}</p><ul>${x.bullets.filter(Boolean).map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`).join('')}`:''}${state.education.filter(x=>x.school).length?`<h5>EDUCATION</h5>${state.education.filter(x=>x.school).map(x=>`<p>${esc(x.school)} · ${esc(x.degree)}</p>`).join('')}`:''}${state.skills.length?`<h5>SKILLS</h5><p>${state.skills.map(esc).join(' · ')}</p>`:''}</div>`}
-
-function calculateScore(){let s=0;if(state.profile.name&&state.profile.role&&state.profile.email&&state.profile.phone)s+=15;if(state.summary.length>=120)s+=15;else if(state.summary.length>=60)s+=10;const bullets=state.experience.flatMap(x=>x.bullets).filter(Boolean);s+=Math.min(30,bullets.length*5);s+=Math.min(15,state.skills.length);s+=state.education.some(x=>x.school)?10:0;s+=state.projects.some(x=>x.name)?5:0;s+=state.certifications.some(x=>x.name)?5:0;return Math.min(100,s)}function renderScore(){const s=calculateScore();document.getElementById('scorePad').innerHTML=`<div class="eyebrow">Resume intelligence</div><h2 class="serif">ATS Resume Score</h2><div class="gauge"><div class="num">${s}<span style="font:15px monospace;color:var(--faint)">/100</span></div><div class="${s>=80?'good':''}">${s>=85?'Strong readiness':s>=70?'Good foundation':'Needs improvement'}</div></div>${scoreLine('Completeness',Math.min(100,s+5))}${scoreLine('Keywords',Math.min(100,state.skills.length*8))}${scoreLine('Impact bullets',Math.min(100,state.experience.flatMap(x=>x.bullets).filter(b=>/\d|%|₹|\$/.test(b)).length*25))}<div class="section">Job description match</div><div class="field"><textarea id="jd" placeholder="Paste a job description here…"></textarea></div><button class="primary" onclick="analyzeJD()">Analyze Job Description<small>Compare useful keywords against your resume.</small></button><div id="jdResult"></div><div class="section">Actionable suggestions</div>${suggestions(s).map(x=>`<div class="suggest">${x}</div>`).join('')}<button class="outline" onclick="go('builder');step=2">Fix experience bullets</button>`}function scoreLine(n,v){return `<div class="scoreline"><header><span>${n}</span><span>${v}%</span></header><div class="meter"><i style="width:${v}%"></i></div></div>`}function suggestions(s){let a=[];if(state.experience.flatMap(x=>x.bullets).filter(Boolean).filter(b=>/\d|%|₹|\$/.test(b)).length<2)a.push('<b>Add measurable results</b><br>Use AUM, client counts, revenue, growth, time saved or process improvements where accurate.');if(state.skills.length<8)a.push('<b>Add relevant skills</b><br>Only include genuine role-relevant skills.');if(!state.profile.linkedin)a.push('<b>Add LinkedIn or portfolio</b><br>Include a professional link when appropriate.');if(!a.length)a.push('<b>Strong foundation</b><br>Review every claim for accuracy before applying.');return a}
-async function callClaude(task,payload={}){const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task,payload})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Claude request failed');return d}async function liveAI(task,payload={}){try{const d=await callClaude(task,payload);return d.text||''}catch(e){toast('AI endpoint unavailable: '+e.message);return ''}}
-async function analyzeJD(){const text=document.getElementById('jd')?.value||'';if(!text.trim()){toast('Paste a job description first');return}toast('AI is analyzing…');const data=await liveAI('job_match',{jobDescription:text,resume:state});if(!data)return;let p;try{p=JSON.parse(data)}catch(e){p={match_score:'—',matched_keywords:[],missing_keywords:[],improvements:[data]}}document.getElementById('jdResult').innerHTML=`<div class="suggest"><b>Match estimate: ${esc(p.match_score)}%</b><br><b>Matched:</b> ${esc((p.matched_keywords||[]).join(', ')||'None')}<br><b>Potential gaps:</b> ${esc((p.missing_keywords||[]).join(', ')||'None')}<br><b>Priority:</b> ${esc((p.improvements||[]).join(' • ')||'None')}<br><small>Guidance only — not a hiring prediction.</small></div>`}
-function renderResumes(){document.getElementById('resumeList').innerHTML=state.resumes.map(r=>`<div class="row"><div class="thumb"></div><div class="rowmain"><b>${esc(r.name)}</b><small>${esc(r.template)} · ${esc(r.updated)}</small></div><span class="scorepill">${esc(r.score)}</span><button class="mini-btn" onclick="openSaved(${r.id})">Open</button></div>`).join('')||'<div class="hint">No saved versions.</div>'}function openSaved(id){const r=state.resumes.find(x=>x.id===id);if(r){state.template=r.template;step=0;save();go('builder');toast('Resume version opened')}}function newResume(){const billing=clone(state.billing||defaultState.billing);state=clone(defaultState);state.billing=billing;state.billing.enforcePremium=false;state.resumes=[];state.versions=[];save();step=0;go('builder');toast('New resume draft created — Pro unlocked')}function duplicateResume(){const v={id:Date.now(),name:state.profile.name+' — Copy',template:state.template,score:calculateScore(),updated:'just now'};state.resumes.push({...v});state.versions.push({...v});save();renderResumes();renderVersionManager();toast('Resume duplicated')}function saveVersion(){const v={id:Date.now(),name:state.profile.name+' — Version '+(state.versions.length+1),template:state.template,score:calculateScore(),updated:'just now'};state.versions.push(v);state.resumes.push({...v});save();renderResumes();renderVersionManager();toast('Resume version saved')}function renderVersionManager(){const el=document.getElementById('versionManager');if(!el)return;el.innerHTML=state.versions.length?state.versions.map(v=>`<div class="jobrow"><div><b>${esc(v.name)}</b><small style="display:block;color:var(--soft)">${esc(v.template)} · ${esc(v.updated)}</small></div><span class="scorepill">${esc(v.score)}</span><button class="mini-btn" onclick="openVersion(${v.id})">Open</button></div>`).join(''):'<div class="hint">No versions saved yet.</div>'}function openVersion(id){const v=state.versions.find(x=>x.id===id);if(!v)return;state.template=v.template;save();go('builder');toast('Version opened')}function resetDraft(){if(confirm('Reset all draft data to the sample?')){const billing=clone(state.billing||defaultState.billing);state=clone(defaultState);state.billing=billing;state.billing.enforcePremium=false;save();go('resumes');toast('Draft reset — premium pricing data retained')}}
-const templates=[['Ledger','free',true],['Ink','free',true],['Column','free',true],['Classic','free',true],['Minimal','free',true],['Executive','premium',true],['Modern','premium',true],['Academic','premium',true],['Portfolio','premium',false],['Creative','premium',false]];function renderTemplates(filter){const arr=templates.filter(t=>filter==='all'||(filter==='ats'?t[2]:filter==='free'?true:t[1]===filter));document.getElementById('tmplgrid').innerHTML=arr.map(t=>`<div class="tmpl" onclick="selectTemplate('${t[0]}')"><div class="tmplpic"><div class="mini"><div class="ln"></div><div class="ln s"></div><div class="ln"></div><div class="ln"></div><div class="ln s"></div></div></div><div class="tmplinfo"><b>${t[0]} <span class="pro-badge">UNLOCKED</span></b><small>Included · ${t[2]?'ATS-safe':'Visual'}</small></div></div>`).join('')}
-function filterTemplates(f,b){document.querySelectorAll('.filters .chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderTemplates(f)}function selectTemplate(t){state.template=t;save();toast(t+' selected');go('builder')}
-function renderSettings(){document.getElementById('settingsPad').innerHTML=`<div class="eyebrow">Preferences</div><h2 class="serif">Settings</h2><div class="card" onclick="toggleDark()"><strong>Dark theme <span class="switch ${state.theme==='dark'?'on':''}"><i></i></span></strong><small>Change editor appearance.</small></div><div class="card"><strong>Default template</strong><select onchange="state.template=this.value;save();renderPreviewIfNeeded()" style="margin-top:8px;width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)">${templates.map(x=>x[0]).map(x=>`<option ${state.template===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="template-controls"><h4>Resume font <span class="pro-badge">PRO UNLOCKED</span></h4><small>All font controls are free in this preview.</small><div class="font-grid">${['Inter','DM Sans','Manrope','Poppins','Montserrat','Roboto','Open Sans','Lato','Source Sans 3','IBM Plex Sans','Nunito','Raleway','Merriweather','Libre Baskerville','Playfair Display','Arial','Georgia','Times New Roman','Verdana','Trebuchet MS'].map(f=>`<button class="font-option ${state.font===f?'active':''}" style="font-family:${f}" onclick="setResumeFont('${f}')">${f}</button>`).join('')}</div></div><div class="template-controls"><h4>Resume text color <span class="pro-badge">PRO UNLOCKED</span></h4><small>Choose body and heading colors for every template.</small><div class="color-row">${['#181A1F','#1E3A5F','#3F6B4F','#6B3F3F','#5B4B7A'].map(c=>`<button aria-label="${c}" class="color-swatch ${state.textColor===c?'active':''}" style="background:${c}" onclick="setResumeTextColor('${c}')"></button>`).join('')}</div></div><div class="card"><strong>Premium features <span class="pro-badge">FREE</span></strong><small>All premium features are currently unlocked. Premium pricing remains stored in app data and can be re-enabled later without deleting it.</small></div><div class="card"><strong>Watermark</strong><span class="switch ${state.watermark?'on':''}" style="float:right" onclick="event.stopPropagation();state.watermark=!state.watermark;save();renderSettings();renderPreviewIfNeeded()"><i></i></span><small>Free preview watermark. Currently ${state.watermark?'enabled':'disabled'}.</small></div><div class="card"><strong>Local autosave</strong><small>Enabled. Resume data stays in this browser.</small></div><div class="card"><strong>AI connection</strong><small id="claudeStatus">Not connected — add a free API key below</small><br><button class="outline" style="margin-top:7px" onclick="testClaude()">Test AI connection</button></div><div class="card"><strong>AI privacy</strong><small>AI requests should require user approval before sending resume or job-description data externally.</small></div><div class="card"><strong>Backup & restore</strong><br><button class="outline" style="margin-top:7px" onclick="exportJSON()">Export JSON</button> <button class="outline" onclick="document.getElementById('jsonFile').click()">Import JSON</button><input id="jsonFile" type="file" accept=".json" style="display:none" onchange="importJSON(event)"></div><div class="card"><strong>App data</strong><br><button class="outline danger" style="margin-top:7px" onclick="resetDraft()">Reset all data</button></div>`}
-function setResumeFont(font){state.font=font;document.documentElement.style.setProperty('--resume-font',font+', sans-serif');save();renderSettings();renderPreviewIfNeeded();toast('Resume font updated')}function setResumeTextColor(c){state.textColor=c;state.headingColor=c;document.documentElement.style.setProperty('--resume-text',c);document.documentElement.style.setProperty('--resume-heading',c);save();renderSettings();renderPreviewIfNeeded();toast('Resume text color updated')}
-function toggleDark(){state.theme=state.theme==='dark'?'light':'dark';document.body.classList.toggle('dark',state.theme==='dark');save();renderSettings()}async function testClaude(){const e=document.getElementById('claudeStatus');if(e)e.textContent='Testing…';try{const d=await callClaude('health',{});if(e)e.textContent='Connected · '+(d.model||'Claude')}catch(x){if(e)e.textContent='Not connected · '+x.message}}
-async function aiBullet(i,j){const original=state.experience[i].bullets[j]||'';if(!original){toast('Enter a bullet first');return}toast('AI is rewriting…');const text=await liveAI('rewrite_bullet',{bullet:original,role:state.profile.role});if(text){state.experience[i].bullets[j]=text.trim();save();renderBuilder();toast('AI rewrite applied')}}async function useAISuggestion(type){if(type!=='summary')return;toast('AI is improving…');const text=await liveAI('improve_summary',{summary:state.summary,role:state.profile.role});if(text){state.summary=text.trim();save();renderBuilder();toast('AI summary applied')}}async function aiRewrite(type){const input=document.getElementById('aiInput').value.trim();if(!input){toast('Add resume text first');return}toast('AI is thinking…');const text=await liveAI(type,{text:input,role:state.profile.role,skills:state.skills});const r=document.getElementById('aiResult');r.style.display='block';r.innerHTML='<b>AI suggestion</b><br>'+esc(text||'No response')}
-function resumeSnapshot(){return {profile:state.profile,summary:state.summary,experience:state.experience,education:state.education,skills:state.skills,projects:state.projects,certifications:state.certifications,additional:state.additional}}function openTailor(){openOverlay('tailor');document.getElementById('tailorTitle').value=state.profile.role||''}function openDoctor(){openOverlay('doctor')}function openInterview(){openOverlay('interview');document.getElementById('interviewRole').value=state.profile.role||''}function openPortfolio(){renderPortfolio();openOverlay('portfolio')}async function runTailor(){const jd=document.getElementById('tailorJD').value.trim(),title=document.getElementById('tailorTitle').value.trim();if(!jd){toast('Paste a job description');return}const result=document.getElementById('tailorResult');result.innerHTML='<div class="suggest">AI is analyzing…</div>';const raw=await liveAI('tailor_resume',{jobTitle:title,jobDescription:jd,resume:resumeSnapshot()});if(!raw)return;let data;try{data=JSON.parse(raw)}catch(e){data={match_score:'—',matched_keywords:[],missing_keywords:[],improvements:[raw],changes:[]}}result.innerHTML=`<div class="suggest"><b>Tailoring plan · ${esc(data.match_score??'—')}% match</b><br><br><b>Matched:</b> ${esc((data.matched_keywords||[]).join(', '))}<br><b>Missing:</b> ${esc((data.missing_keywords||[]).join(', '))}<br><b>Priority:</b> ${esc((data.improvements||[]).join(' • '))}<br><br><button class="outline" onclick='showTailorChanges(${JSON.stringify(data).replace(/</g,'\\u003c')})'>Review suggested changes</button></div>`}function showTailorChanges(data){pendingTailor=data;const arr=data.changes||[];document.getElementById('changesResult').innerHTML=arr.map((x,i)=>`<div class="change"><div><span class="badge2">${esc(x.section||'Resume')}</span><p><del>${esc(x.before||'')}</del></p></div><div class="new"><span class="badge2">AI</span><p>${esc(x.after||'')}</p><label><input type="checkbox" data-i="${i}" checked> Approve</label></div></div>`).join('')||'<div class="suggest">No structured changes returned.</div>';if(arr.length)document.getElementById('changesResult').innerHTML+=`<button class="pay" onclick="applyTailored()">Apply Approved Changes</button>`;openOverlay('changes')}function applyTailored(){if(!pendingTailor)return;document.querySelectorAll('#changesResult input[data-i]').forEach(ch=>{if(!ch.checked)return;const c=pendingTailor.changes[+ch.dataset.i];if(!c)return;if(c.target==='summary')state.summary=c.after;if(c.target==='profile.role')state.profile.role=c.after;if(c.target?.startsWith('experience:')){const [_,i,j]=c.target.split(':');if(state.experience[+i])state.experience[+i].bullets[+j]=c.after}if(c.target==='skills.add')(c.after_list||[]).forEach(s=>{if(!state.skills.includes(s))state.skills.push(s)})});const v={id:Date.now(),name:state.profile.name+' — Tailored',template:state.template,score:calculateScore(),updated:'just now'};state.resumes.push({...v});state.versions.push({...v});save();closeOverlay('changes');closeOverlay('tailor');renderResumes();toast('Approved AI changes applied')}
-async function runDoctor(){const box=document.getElementById('doctorResult');box.innerHTML='<div class="suggest">AI is diagnosing…</div>';const raw=await liveAI('resume_doctor',{resume:resumeSnapshot()});if(!raw)return;let data;try{data=JSON.parse(raw)}catch(e){data={score:calculateScore(),summary:raw,issues:[]}}box.innerHTML=`<div class="metricgrid"><div class="metric"><b>${esc(data.score??calculateScore())}</b><small>Health score</small></div><div class="metric"><b>${(data.issues||[]).length}</b><small>Issues</small></div></div><div class="suggest"><b>${esc(data.summary||'Diagnosis complete')}</b><br><br>${(data.issues||[]).map(x=>'• '+esc(typeof x==='string'?x:x.issue||x.title||'Issue')+'<br>').join('')}</div>`}async function runInterview(){const role=document.getElementById('interviewRole').value||state.profile.role,type=document.getElementById('interviewType').value;const box=document.getElementById('interviewResult');box.innerHTML='<div class="suggest">AI is generating questions…</div>';const raw=await liveAI('interview_questions',{role,type,resume:resumeSnapshot()});if(raw)box.innerHTML=`<div class="suggest">${esc(raw).replace(/\n/g,'<br>')}<br><br><button class="outline" onclick="toast('Practice mode ready for connection to answer evaluation')">Start practice</button></div>`}function renderPortfolio(){const p=state.profile;document.getElementById('portfolioResult').innerHTML=`<div class="paper" style="margin:0"><h2>${esc(p.name)}</h2><div class="role">${esc(p.role)}</div><p>${esc(state.summary)}</p><h5>SKILLS</h5><div class="skills">${state.skills.map(x=>`<span>${esc(x)}</span>`).join('')}</div><h5>EXPERIENCE</h5>${state.experience.filter(x=>x.company||x.role).map(x=>`<p><b>${esc(x.role)}</b> · ${esc(x.company)}</p>`).join('')}</div>`}function sharePortfolio(){const text=`${state.profile.name} — ${state.profile.role}\n${state.summary}`;navigator.clipboard?.writeText(text);toast('Public profile copied')}function addJob(){const company=prompt('Company name');if(!company)return;const role=prompt('Role');if(!role)return;state.jobs.push({id:Date.now(),company,role,status:'Applied',date:new Date().toLocaleDateString()});save();toast('Application added')}function cycleJob(id){const j=state.jobs.find(x=>x.id===id);if(!j)return;j.status={Applied:'Interview',Interview:'Offer',Offer:'Rejected',Rejected:'Applied'}[j.status]||'Applied';save();toast('Application status updated')}function renderCareer(){const s=calculateScore();document.getElementById('hubScore').textContent=s;document.getElementById('hubSkills').textContent=state.skills.length;document.getElementById('hubVersions').textContent=state.versions.length;document.getElementById('hubJobs').textContent=state.jobs.length;document.getElementById('tracker').innerHTML=state.jobs.length?state.jobs.map(j=>`<div class="jobrow"><div><b>${esc(j.company)}</b><small style="display:block;color:var(--soft)">${esc(j.role)}</small></div><span class="statuspill">${esc(j.status)}</span><small>${esc(j.date)}</small><button class="mini-btn" onclick="cycleJob(${j.id})">Update</button></div>`).join(''):'<div class="hint">No applications yet. Add your first job application.</div>'}function renderHome(){document.getElementById('homeRecent').innerHTML=state.resumes.slice(0,3).map(r=>`<div class="row" onclick="openSaved(${r.id})"><div class="thumb"></div><div class="rowmain"><b>${esc(r.name)}</b><small>${esc(r.template)} · ${esc(r.updated)}</small></div><span class="scorepill">${esc(r.score)}</span></div>`).join('')||'<div class="hint">No recent resumes yet.</div>';const t=document.getElementById('homeTracker');if(t)t.innerHTML=state.jobs.length?state.jobs.slice(0,3).map(j=>`<div class="jobrow"><div><b>${esc(j.company)}</b><small style="display:block;color:var(--soft)">${esc(j.role)}</small></div><span class="statuspill">${esc(j.status)}</span></div>`).join(''):'<div class="hint">No applications yet. Add your first job application.</div>'}
-function exportPDF(){document.getElementById('printArea').innerHTML=resumeHTML();document.getElementById('printArea').style.display='block';window.print();setTimeout(()=>document.getElementById('printArea').style.display='none',500)}function shareResume(){const text=`${state.profile.name} — ${state.profile.role}\n${state.profile.email} · ${state.profile.phone}`;if(navigator.share)navigator.share({title:'My ResuMate Resume',text}).catch(()=>{});else{navigator.clipboard?.writeText(text);toast('Resume header copied')}}function exportJSON(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resumate-backup.json';a.click();URL.revokeObjectURL(a.href);toast('Backup downloaded')}function importJSON(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=JSON.parse(r.result);state.billing=state.billing||clone(defaultState.billing);state.billing.enforcePremium=false;save();renderSettings();toast('Backup restored — Pro remains unlocked in preview')}catch(e){toast('Invalid JSON backup')}};r.readAsText(f)}function doTextImport(){const text=document.getElementById('importText').value.trim();if(!text){toast('Paste resume text first');return}const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);state.profile.name=lines[0]||state.profile.name;if(lines[1])state.profile.role=lines[1];if(lines.length>2)state.summary=lines.slice(2,5).join(' ').slice(0,700);save();closeOverlay('import');step=0;go('builder');toast('Resume imported')}
-state.billing=state.billing||clone(defaultState.billing);state.billing.enforcePremium=false;
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay').forEach(x=>x.classList.remove('show'))});document.documentElement.style.setProperty('--blue',state.accent||'#1E3A5F');document.documentElement.style.setProperty('--resume-font',state.font||'Inter');document.documentElement.style.setProperty('--resume-text',state.textColor||'#181A1F');document.documentElement.style.setProperty('--resume-heading',state.headingColor||state.textColor||'#181A1F');document.body.classList.toggle('dark',state.theme==='dark');renderBuilder();renderHome();renderResumes();renderTemplates('all');renderScore();renderSettings();renderCareer();renderVersionManager();updateSavedLabel();
-
-</script>
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-<script>
-/* Premium UI/UX layer — additive only, does not modify the app logic above.
-   Wires up AOS for the above-the-fold entrance animation and keeps it in
-   sync whenever the app navigates between screens. */
-if(window.AOS){AOS.init({duration:500,once:true,offset:0,disable:false});}
-const __go=go;
-go=function(name){__go(name);if(window.AOS)setTimeout(()=>AOS.refreshHard(),60)};
-
-/* Name onboarding — welcome screen + name propagation across the app */
-function firstNameOf(n){return (n||'').trim().split(' ')[0]||'there'}
-function updateHeroName(){const el=document.getElementById('heroName');if(el)el.textContent=firstNameOf(state.profile.name)}
-const __renderHome=renderHome;
-renderHome=function(){__renderHome();updateHeroName()};
-function completeOnboarding(){
-  const v=document.getElementById('welcomeName').value.trim();
-  if(!v){toast('Please enter your name to continue');return}
-  const oldName=state.profile.name;
-  state.profile.name=v;
-  state.resumes.forEach(r=>{if(oldName&&r.name&&r.name.startsWith(oldName))r.name=v+r.name.slice(oldName.length)});
-  (state.versions||[]).forEach(r=>{if(oldName&&r.name&&r.name.startsWith(oldName))r.name=v+r.name.slice(oldName.length)});
-  state.onboarded=true;
-  save();
-  renderBuilder();renderResumes();renderCareer();renderScore();renderVersionManager();
-  document.getElementById('welcome').classList.remove('show');
-  toast('Welcome, '+firstNameOf(v)+' — your workspace is ready');
-}
-function skipOnboarding(){
-  state.onboarded=true;save();
-  document.getElementById('welcome').classList.remove('show');
-}
-updateHeroName();
-if(!state.onboarded){
-  document.getElementById('welcome').classList.add('show');
-  setTimeout(()=>document.getElementById('welcomeName')?.focus(),250);
-}
-
-/* ===== Free AI backend (bring-your-own key: Groq or OpenRouter) =====
-   Replaces the stubbed /api/claude call with a direct, client-side call
-   to an OpenAI-compatible free chat-completions endpoint. Every existing
-   call site (aiRewrite, aiBullet, useAISuggestion, analyzeJD, runTailor,
-   runDoctor, runInterview, testClaude) goes through callClaude(), so
-   overriding it here is enough to make all of them live — no other
-   function needed to change. */
-function aiEndpoint(provider){
-  return provider==='openrouter'
-    ? 'https://openrouter.ai/api/v1/chat/completions'
-    : 'https://api.groq.com/openai/v1/chat/completions';
-}
-function buildAIPrompt(task,payload){
-  const role=payload.role||state.profile.role||'the target role';
-  const skills=(payload.skills||state.skills||[]).join(', ');
-  switch(task){
-    case 'bullet':
-      return {json:false,system:'You are a resume-writing expert. Rewrite resume bullet points to be concise, achievement-focused and ATS-friendly. Reply with ONLY the rewritten bullet — no preamble, no quotes, no markdown.',user:`Role: ${role}\nSkills: ${skills}\nRewrite this:\n${payload.text}`};
-    case 'summary':
-      return {json:false,system:'You are a resume-writing expert. Improve resume summaries into 2-3 punchy, specific, results-oriented sentences. Reply with ONLY the improved summary — no preamble.',user:`Role: ${role}\nSkills: ${skills}\nImprove this summary:\n${payload.text}`};
-    case 'keywords':
-      return {json:false,system:'You are an ATS optimization expert. Reply with ONLY a comma-separated list of 10-15 resume keywords relevant to the role and text given — no preamble, no numbering.',user:`Role: ${role}\nText:\n${payload.text}`};
-    case 'quantify':
-      return {json:false,system:'You are a resume-writing expert. Suggest specific ways to add measurable metrics (numbers, percentages, currency, time saved) to the given resume text. Reply with 3-5 short suggestions as plain lines — no preamble.',user:`Role: ${role}\nText:\n${payload.text}`};
-    case 'rewrite_bullet':
-      return {json:false,system:'You are a resume-writing expert. Rewrite the bullet to be concise, achievement-focused and ATS-friendly. Reply with ONLY the rewritten bullet — one line, no quotes, no preamble.',user:`Role: ${role}\nBullet:\n${payload.bullet}`};
-    case 'improve_summary':
-      return {json:false,system:'You are a resume-writing expert. Improve this professional summary into 2-3 punchy sentences. Reply with ONLY the improved summary — no preamble.',user:`Role: ${role}\nSummary:\n${payload.summary}`};
-    case 'job_match':
-      return {json:true,system:'You are an ATS resume-matching expert. Reply with ONLY valid JSON, no markdown fences, no commentary, in exactly this shape: {"match_score": <integer 0-100>, "matched_keywords": [strings], "missing_keywords": [strings], "improvements": [short strings]}',user:`Job description:\n${payload.jobDescription}\n\nResume JSON:\n${JSON.stringify(payload.resume)}`};
-    case 'tailor_resume':
-      return {json:true,system:'You are a resume-tailoring expert. Reply with ONLY valid JSON, no markdown fences, no commentary, in exactly this shape: {"match_score": <integer 0-100>, "matched_keywords": [strings], "missing_keywords": [strings], "improvements": [short strings], "changes": [{"section": "Summary|Experience|Skills", "before": string, "after": string, "target": "summary"|"profile.role"|"experience:INDEX:BULLETINDEX"|"skills.add", "after_list": [strings, only when target is skills.add]}]}. Include at most 4 changes, using real indices from the resume JSON for experience targets.',user:`Job title: ${payload.jobTitle||''}\nJob description:\n${payload.jobDescription}\n\nResume JSON:\n${JSON.stringify(payload.resume)}`};
-    case 'resume_doctor':
-      return {json:true,system:'You are a critical resume reviewer. Reply with ONLY valid JSON, no markdown fences, no commentary, in exactly this shape: {"score": <integer 0-100>, "summary": "one paragraph diagnosis", "issues": ["short issue", ...]}. Find weak bullets, vague claims, missing metrics and structural gaps.',user:`Resume JSON:\n${JSON.stringify(payload.resume)}`};
-    case 'interview_questions':
-      return {json:false,system:'You are an interview coach. Generate 6-8 realistic interview questions for the given role and interview type. Reply with ONLY a plain list, one question per line — no preamble, no markdown.',user:`Role: ${payload.role||role}\nInterview type: ${payload.type||'Mixed'}\nCandidate background:\n${JSON.stringify(payload.resume||{})}`};
-    default:
-      return {json:false,system:'You are a helpful resume-writing assistant.',user:JSON.stringify(payload)};
+// Prevent zoom on double tap
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(event) {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 300) {
+    event.preventDefault();
   }
+  lastTouchEnd = now;
+}, false);
+
+// Handle safe area changes (device rotation, etc)
+window.addEventListener('orientationchange', () => {
+  document.documentElement.style.height = window.innerHeight + 'px';
+});
+
+// Status bar color on Android
+if (window.StatusBar) {
+  StatusBar.styleDefault();
+  StatusBar.hide();
 }
-async function callClaude(task,payload={}){
-  const provider=state.aiProvider||'groq';
-  const model=state.aiModel||(provider==='openrouter'?'meta-llama/llama-3.3-70b-instruct:free':'openai/gpt-oss-120b');
-  const key=(state.aiKey||'').trim();
-  if(!key)throw new Error('Add a free Groq or OpenRouter API key in Settings');
-  if(task==='health'){
-    const r=await fetch(aiEndpoint(provider),{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,messages:[{role:'user',content:'Reply with the single word OK.'}],max_tokens:5})});
-    const d=await r.json().catch(()=>({}));
-    if(!r.ok)throw new Error(d.error?.message||('HTTP '+r.status));
-    return {text:'OK',model};
+
+// Prevent back button default behavior
+document.addEventListener('backbutton', () => {
+  if (confirm('Exit ResuMate?')) {
+    navigator.app.exitApp();
   }
-  const {system,user,json}=buildAIPrompt(task,payload);
-  const body={model,messages:[{role:'system',content:system},{role:'user',content:user}],temperature:0.5};
-  if(json&&provider==='groq')body.response_format={type:'json_object'};
-  const r=await fetch(aiEndpoint(provider),{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify(body)});
-  const d=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(d.error?.message||('HTTP '+r.status));
-  let text=d.choices?.[0]?.message?.content||'';
-  if(json)text=text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-  return {text};
-}
-function setAIProvider(p){
-  state.aiProvider=p;
-  state.aiModel=p==='openrouter'?'meta-llama/llama-3.3-70b-instruct:free':'openai/gpt-oss-120b';
-  save();renderSettings();
-}
-function setAIKey(v){state.aiKey=v;save()}
-function setAIModel(v){state.aiModel=v;save()}
-const __renderSettings=renderSettings;
-renderSettings=function(){
-  __renderSettings();
-  const anchor=document.getElementById('claudeStatus')&&document.getElementById('claudeStatus').closest('.card');
-  if(!anchor)return;
-  const statusEl=document.getElementById('claudeStatus');
-  if(statusEl)statusEl.textContent=state.aiKey?('Key saved · '+(state.aiProvider==='openrouter'?'OpenRouter':'Groq')+' · '+state.aiModel):'Not connected — add a free API key below';
-  const isOR=state.aiProvider==='openrouter';
-  const suggestions=isOR
-    ?['meta-llama/llama-3.3-70b-instruct:free','deepseek/deepseek-r1:free','qwen/qwen3-coder:free','google/gemma-3-27b-it:free']
-    :['openai/gpt-oss-120b','openai/gpt-oss-20b','groq/compound','groq/compound-mini'];
-  anchor.insertAdjacentHTML('beforebegin',`<div class="card" id="aiKeyCard"><strong>Free AI provider</strong><small>Bring your own free API key &mdash; stored only in this browser, sent only to the provider you pick.</small><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px"><button class="font-option ${!isOR?'active':''}" onclick="setAIProvider('groq')">Groq</button><button class="font-option ${isOR?'active':''}" onclick="setAIProvider('openrouter')">OpenRouter</button></div><div class="field" style="margin-top:10px"><label>API key</label><input type="password" placeholder="Paste your free API key" value="${esc(state.aiKey||'')}" oninput="setAIKey(this.value)"></div><div class="field"><label>Model</label><input list="aiModelList" value="${esc(state.aiModel||'')}" oninput="setAIModel(this.value)"><datalist id="aiModelList">${suggestions.map(m=>`<option value="${m}">`).join('')}</datalist></div><small>Free key: <a href="${isOR?'https://openrouter.ai/keys':'https://console.groq.com/keys'}" target="_blank" rel="noopener">${isOR?'openrouter.ai/keys':'console.groq.com/keys'}</a></small></div>`);
-};
-renderSettings();
+}, false);
+
+console.log('ResuMate APK loaded successfully on', navigator.userAgent);
 </script>
-</body></html>
+</body>
+</html>
