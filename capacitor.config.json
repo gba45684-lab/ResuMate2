@@ -3,7 +3,37 @@
 	"appName": "ResuMate",
 	"webDir": "www",
 	"bundledWebRuntime": false,
+	"server": {
+		"androidScheme": "https",
+		"url": "http://localhost",
+		"cleartext": true
+	},
 	"android": {
-		"allowMixedContent": true
+		"allowMixedContent": true,
+		"useLegacyBridge": false,
+		"captureInput": true,
+		"handleSilentStart": true,
+		"webViewDebuggingEnabled": false
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchAutoHide": true,
+			"launchShowDuration": 3000,
+			"backgroundColor": "#ffffff",
+			"androidSplashResourceName": "splash",
+			"androidScaleType": "centerCrop",
+			"showSpinner": false
+		},
+		"StatusBar": {
+			"style": "DARK",
+			"backgroundColor": "#ffffff",
+			"overlaysWebView": false
+		},
+		"SafeArea": {
+			"offset": 0
+		},
+		"Keyboard": {
+			"resize": "native"
+		}
 	}
 }
