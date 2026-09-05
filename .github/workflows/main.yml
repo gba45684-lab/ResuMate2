@@ -37,15 +37,14 @@ jobs:
           test -f www/index.html
           test -f scripts/patch-web.py
           test -f scripts/patch-android.py
+          test -f scripts/bundle-runtime-libs.py
           test ! -f index.html
-
-      - name: Bundle DOCX library for Android
-        run: |
-          mkdir -p www/vendor
-          cp node_modules/docx/build/index.js www/vendor/docx.js
 
       - name: Apply ResuMate web fixes
         run: python3 scripts/patch-web.py
+
+      - name: Bundle DOCX library for Android
+        run: python3 scripts/bundle-runtime-libs.py
 
       - name: Add Android platform if missing
         run: |
