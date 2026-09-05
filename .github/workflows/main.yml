@@ -37,11 +37,16 @@ jobs:
           test -f www/index.html
           test -f scripts/patch-web.py
           test -f scripts/patch-android.py
+          test -f scripts/patch-android-ui.py
+          test -f scripts/finalize-export-ui.py
           test -f scripts/bundle-runtime-libs.py
           test ! -f index.html
 
       - name: Apply ResuMate web fixes
         run: python3 scripts/patch-web.py
+
+      - name: Finalize direct PDF and exact-text DOCX export
+        run: python3 scripts/finalize-export-ui.py
 
       - name: Bundle DOCX library for Android
         run: python3 scripts/bundle-runtime-libs.py
@@ -57,6 +62,9 @@ jobs:
 
       - name: Apply native Android bridge and Back behavior
         run: python3 scripts/patch-android.py
+
+      - name: Hide Android status bar
+        run: python3 scripts/patch-android-ui.py
 
       - name: Build debug APK
         working-directory: android
