@@ -20220,12 +20220,18 @@ var __async = (__this, __arguments, generator) => {
             padding-top: env(safe-area-inset-top, 0px);
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
+        .top-space {
+            height: calc(env(safe-area-inset-top, 0px) + 10px);
+            background: #000;
+            flex-shrink: 0;
+        }
         .status-bar {
             padding: 8px 20px 4px;
             display: flex;
             justify-content: space-between;
             font: 10px 'IBM Plex Mono', monospace;
             color: var(--faint);
+            flex-shrink: 0;
         }
         .header {
             padding: 6px 18px 12px;
@@ -20684,6 +20690,55 @@ var __async = (__this, __arguments, generator) => {
             color: var(--faint);
             font: 8px 'IBM Plex Mono', monospace;
             padding: 0 4px;
+        }
+        /* Immersive full-screen preview: the builder's own top bar, shown
+           in place of the app's shared header (which gets hidden below)
+           while previewing the resume full-screen. */
+        .preview-topbar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 14px 10px;
+            border-bottom: 1px solid var(--line);
+            background: var(--paper);
+            flex-shrink: 0;
+        }
+        .preview-topbar .brand {
+            font: 600 16px 'Fraunces', serif;
+        }
+        .preview-topbar .preview-actions {
+            display: flex;
+            gap: 6px;
+        }
+        #builder.preview-full {
+            position: fixed;
+            inset: 0;
+            z-index: 40;
+            background: var(--paper);
+            display: flex;
+            flex-direction: column;
+        }
+        #builder.preview-full .builder-head,
+        #builder.preview-full .toggle-group,
+        #builder.preview-full .builder-foot {
+            display: none !important;
+        }
+        #builder.preview-full .preview-topbar {
+            display: flex;
+        }
+        #builder.preview-full #previewPane {
+            flex: 1;
+            min-height: 0;
+            display: flex !important;
+            flex-direction: column;
+        }
+        #builder.preview-full .preview-studio {
+            flex: 1;
+            min-height: 0;
+        }
+        .app.immersive-preview > .header {
+            display: none;
         }
         .preview-stage-wrap {
             flex: 1;
@@ -21283,6 +21338,15 @@ var __async = (__this, __arguments, generator) => {
             height: 3px;
             background: var(--accent, #1D3450);
             margin: 0 0 4px;
+        }
+        /* Keep individual resume entries intact when a PDF/print export
+           spans more than one A4 page, so a line of text or a bullet
+           never gets sliced across the page break. */
+        .paper h2, .paper .role, .paper .contact-line, .paper h5,
+        .paper li, .paper .exp-item, .paper .exp-header,
+        .paper .skills, .paper .accent-bar {
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
         .tmpl-grid {
             display: grid;
@@ -22321,7 +22385,6 @@ var __async = (__this, __arguments, generator) => {
         }
     
         /* ResuMate Android/browser navigation + export fixes */
-        .status-bar { display:none !important; }
         .header-actions { display:flex; align-items:center; justify-content:flex-end; gap:6px; margin-left:auto; min-width:0; }
         .back-btn { flex:none; min-height:28px; white-space:nowrap; }
         .header-tag { max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -22329,6 +22392,7 @@ var __async = (__this, __arguments, generator) => {
 </head>
 <body>
     <div class="app" id="app">
+        <div class="top-space"></div>
         <div class="status-bar"><span id="statusBarTime">9:41</span><span id="statusBarBattery">100%</span></div>
         <div class="header">
             <div class="brand">Resu<b>Mate</b></div>
@@ -22631,6 +22695,10 @@ var __async = (__this, __arguments, generator) => {
 
             // ─── NAVIGATION ──────────────────────────────────────────────
             function go(name, fromBack = false) {
+                if (name !== 'builder' && mode === 'preview') {
+                    mode = 'edit';
+                    document.getElementById('app').classList.remove('immersive-preview');
+                }
                 document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
                 const el = document.getElementById(name);
                 if (el) el.classList.add('active');
@@ -22668,6 +22736,7 @@ var __async = (__this, __arguments, generator) => {
                 if (mode === 'preview' && document.querySelector('.view.active')?.id === 'builder') {
                     mode = 'edit';
                     renderBuilder();
+                    document.getElementById('app').classList.remove('immersive-preview');
                     return;
                 }
                 if (state.navHistory.length > 1) {
@@ -22781,6 +22850,7 @@ var __async = (__this, __arguments, generator) => {
             function builderMode(m) {
                 mode = m;
                 renderBuilder();
+                document.getElementById('app').classList.toggle('immersive-preview', mode === 'preview');
                 if (mode === 'preview' && document.querySelector('.view.active')?.id !== 'builder') {
                     go('builder');
                 }
@@ -23239,6 +23309,13 @@ var __async = (__this, __arguments, generator) => {
                 const htmlContent = view === 'resume' ? resumeHTML() : atsPreviewHTML();
 
                 pane.innerHTML = `
+                <div class="preview-topbar">
+                    <button class="back-btn" style="display:flex" onclick="window.builderMode('edit')"><i class="fa-solid fa-arrow-left"></i> Edit</button>
+                    <div class="brand">${esc(state.template)}</div>
+                    <div class="preview-actions">
+                        <button class="btn-outline" style="padding:5px 10px;font-size:9px" onclick="window.openPDFExport()"><i class="fa-solid fa-file-pdf"></i></button>
+                    </div>
+                </div>
                 <div class="preview-studio">
                     <div class="preview-meta">
                         <span>LIVE · <span id="previewZoomLabel">${zoom}%</span></span>
@@ -24280,19 +24357,44 @@ var __async = (__this, __arguments, generator) => {
                 let temp = null;
                 try {
                     if (typeof html2pdf === 'undefined') throw new Error('PDF library not loaded');
+                    // Render inside the real 210mm x 297mm A4 wrapper (already
+                    // defined in CSS) instead of an arbitrary 800px box, so the
+                    // exported page is true A4 with no double margins.
                     temp = document.createElement('div');
-                    temp.style.width = '800px';
-                    temp.style.padding = '20px';
-                    temp.style.background = '#ffffff';
-                    temp.style.color = '#181A1F';
+                    temp.className = 'premium-print-document';
                     temp.innerHTML = resumeHTML();
                     document.body.appendChild(temp);
+                    const paperEl = temp.querySelector('.paper') || temp;
+                    // A4 is 297mm tall; convert to px using this element's own
+                    // mm->px ratio (210mm wide) so it's accurate regardless of
+                    // device pixel ratio.
+                    const pageHeightPx = temp.offsetWidth * (297 / 210);
+                    const naturalHeight = paperEl.scrollHeight;
+                    if (naturalHeight > pageHeightPx) {
+                        const overflowRatio = naturalHeight / pageHeightPx;
+                        if (overflowRatio <= 1.5) {
+                            // Content only slightly overruns one page — shrink
+                            // it uniformly (text, spacing, everything) so it
+                            // fits on a single A4 page instead of spilling a
+                            // near-empty second page.
+                            const scale = Math.max(pageHeightPx / naturalHeight, 0.72);
+                            paperEl.style.transform = `scale(${scale})`;
+                            paperEl.style.transformOrigin = 'top center';
+                            temp.style.height = pageHeightPx + 'px';
+                            temp.style.overflow = 'hidden';
+                        }
+                        // Otherwise it's genuinely multi-page content — leave
+                        // it full-size and let it flow across pages; the
+                        // break-inside:avoid CSS above keeps lines/bullets
+                        // from being cut mid-item at the page boundary.
+                    }
                     const opt = {
-                        margin: 10,
+                        margin: 0,
                         filename,
                         image: { type: 'jpeg', quality: 0.98 },
                         html2canvas: { scale: 2, useCORS: true, logging: false },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: ['css', 'legacy'] }
                     };
                     const pdfBlob = await html2pdf().set(opt).from(temp).outputPdf('blob');
                     if (window.ResuMateNative) {
@@ -24356,7 +24458,21 @@ var __async = (__this, __arguments, generator) => {
                         children: [new TextRun({ text: line, size: 20 })],
                         spacing: { after: 80 }
                     }));
-                    const doc = new Document({ sections: [{ properties: {}, children }] });
+                    // Match the PDF export: real A4 page (210mm x 297mm, in
+                    // twips: 1mm = 56.7 twips) with the same 16mm/15mm
+                    // margins used by the print/PDF layout, so the DOCX isn't
+                    // silently exported as US Letter.
+                    const doc = new Document({
+                        sections: [{
+                            properties: {
+                                page: {
+                                    size: { width: 11906, height: 16838 },
+                                    margin: { top: 907, bottom: 907, left: 850, right: 850 }
+                                }
+                            },
+                            children
+                        }]
+                    });
                     const blob = await Packer.toBlob(doc);
                     const filename = (state.profile.name || 'Resume').replace(/[^a-zA-Z0-9_-]/g, '_') + '.docx';
                     if (window.ResuMateNative) {
@@ -24457,6 +24573,19 @@ var __async = (__this, __arguments, generator) => {
             updateBackButton();
 
             function initLiveStatusBar() {
+                // The real device status bar (time/battery/signal, drawn by
+                // the OS) is what should always show — it sits above the app
+                // via the safe-area-inset-top padding on .app, completely
+                // separate from this in-app bar. This fake bar exists only
+                // for the plain HTML/browser preview, where there is no real
+                // device chrome to show. Inside the actual Capacitor app the
+                // real one is already visible, so hide this one there to
+                // avoid showing two status bars at once.
+                if (window.ResuMateNative) {
+                    const bar = document.querySelector('.status-bar');
+                    if (bar) bar.style.display = 'none';
+                    return;
+                }
                 const timeEl = document.getElementById('statusBarTime');
                 const batEl = document.getElementById('statusBarBattery');
                 const updateTime = () => {
