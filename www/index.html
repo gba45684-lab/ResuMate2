@@ -2130,7 +2130,17 @@
         .dark .flyout .tpl-card .tpl-swatch { background: #1E242C; }
         .dark .flyout .tpl-card .tpl-swatch .tpl-ln { background: #4A4F57; }
         .dark .switch { background: #3A414C; }
-        .dark .font-opt.active { border-color: var(--brass); box-shadow: 0 0 0 1px var(--brass); }
+        .dark .font-opt {
+            background: #1A1F27;
+            color: #EEEAE0;
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .dark .font-opt.active {
+            border-color: var(--brass);
+            box-shadow: 0 0 0 1px var(--brass);
+            background: #252D38;
+            color: var(--paper);
+        }
         .dark .color-swatch-sm.active { box-shadow: 0 0 0 1px var(--paper2); }
         .dark .row-item:hover,
         .dark .card-glass:hover,
@@ -2150,7 +2160,7 @@
 </head>
 <body>
     <div class="app" id="app">
-        <div class="status-bar"><span>9:41</span><span>LTE · 100%</span></div>
+        <div class="status-bar"><span id="statusBarTime">9:41</span><span id="statusBarBattery">100%</span></div>
         <div class="header">
             <div class="brand">Resu<b>Mate</b></div>
             <div class="header-actions">
@@ -4192,25 +4202,15 @@
                     });
                     Packer.toBlob(doc).then(blob => {
                         const filename = (state.profile.name || 'Resume').replace(/[^a-zA-Z0-9_\-]/g, '_') + '.docx';
-                        if (navigator.share && window.Capacitor) {
-                            const reader = new FileReader();
-                            reader.readAsDataURL(blob);
-                            reader.onloadend = () => {
-                                const base64data = reader.result;
-                                const link = document.createElement('a');
-                                link.href = base64data;
-                                link.download = filename;
-                                link.click();
-                                toast('DOCX generated');
-                            };
-                        } else {
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            link.download = filename;
-                            link.click();
-                            setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-                            toast('DOCX exported');
-                        }
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        setTimeout(() => URL.revokeObjectURL(url), 2000);
+                        toast('DOCX downloaded to local storage');
                     });
                 } catch (e) { toast('DOCX export error: ' + e.message); }
             }
@@ -4289,6 +4289,31 @@
             renderVersionManager();
             updateSavedLabel();
             updateBackButton();
+
+            function initLiveStatusBar() {
+                const timeEl = document.getElementById('statusBarTime');
+                const batEl = document.getElementById('statusBarBattery');
+                const updateTime = () => {
+                    const now = new Date();
+                    if (timeEl) timeEl.textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                };
+                updateTime();
+                setInterval(updateTime, 10000);
+
+                if (navigator.getBattery) {
+                    navigator.getBattery().then(battery => {
+                        const updateBat = () => {
+                            const pct = Math.round(battery.level * 100);
+                            const icon = battery.charging ? '⚡ ' : '';
+                            if (batEl) batEl.textContent = `${icon}${pct}%`;
+                        };
+                        updateBat();
+                        battery.addEventListener('levelchange', updateBat);
+                        battery.addEventListener('chargingchange', updateBat);
+                    }).catch(() => {});
+                }
+            }
+            initLiveStatusBar();
 
             if (window.AOS) { AOS.init({ duration: 500, once: true }); }
 
