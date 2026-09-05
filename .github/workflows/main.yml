@@ -36,7 +36,12 @@ jobs:
           test -f package-lock.json
           test -f capacitor.config.json
           test -f www/index.html
+          test -f scripts/patch-web.py
+          test -f scripts/patch-android.py
           test ! -f index.html
+
+      - name: Apply ResuMate web fixes
+        run: python3 scripts/patch-web.py
 
       - name: Add Android platform if missing
         run: |
@@ -46,6 +51,9 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      - name: Apply native Android bridge and Back behavior
+        run: python3 scripts/patch-android.py
 
       - name: Build debug APK
         working-directory: android
