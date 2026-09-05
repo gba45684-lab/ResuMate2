@@ -28,17 +28,21 @@ jobs:
           java-version: 21
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Verify clean project structure
         run: |
           test -f package.json
-          test -f package-lock.json
           test -f capacitor.config.json
           test -f www/index.html
           test -f scripts/patch-web.py
           test -f scripts/patch-android.py
           test ! -f index.html
+
+      - name: Bundle DOCX library for Android
+        run: |
+          mkdir -p www/vendor
+          cp node_modules/docx/build/index.js www/vendor/docx.js
 
       - name: Apply ResuMate web fixes
         run: python3 scripts/patch-web.py
