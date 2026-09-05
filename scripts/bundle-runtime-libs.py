@@ -5,19 +5,33 @@ INDEX = ROOT / 'www' / 'index.html'
 VENDOR = ROOT / 'www' / 'vendor'
 VENDOR.mkdir(parents=True, exist_ok=True)
 
-# docx is installed from package.json during the APK build. Copy the browser bundle into
-# www so the APK does not depend on the public CDN at runtime.
-src = ROOT / 'node_modules' / 'docx' / 'build' / 'index.js'
+# docx 8.x publishes multiple builds. The plain index.js is an ES module and
+# cannot be loaded by a normal <script> tag, so prefer the UMD browser bundle.
+docx_build = ROOT / 'node_modules' / 'docx' / 'build'
+candidates = [
+    docx_build / 'index.umd.js',
+    docx_build / 'index.umd.cjs',
+    docx_build / 'index.umd.js',
+]
+src = next((p for p in candidates if p.exists()), None)
+if src is None:
+    available = ', '.join(p.name for p in sorted(docx_build.glob('index*'))) if docx_build.exists() else 'build directory missing'
+    raise SystemExit(f'DOCX browser UMD bundle missing in {docx_build}. Available: {available}')
+
 dst = VENDOR / 'docx.js'
-if not src.exists():
-    raise SystemExit(f'DOCX browser bundle missing: {src}')
 dst.write_bytes(src.read_bytes())
 
 text = INDEX.read_text(encoding='utf-8')
-text = text.replace(
+old_urls = [
     '<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js" onerror="window.__docxLoadFailed=true"></script>',
     '<script src="vendor/docx.js" onerror="window.__docxLoadFailed=true"></script>',
-    1,
-)
+]
+for old in old_urls:
+    if old in text:
+        text = text.replace(old, '<script src="vendor/docx.js" onerror="window.__docxLoadFailed=true"></script>', 1)
+        break
+else:
+    raise SystemExit('DOCX script tag not found in www/index.html')
+
 INDEX.write_text(text, encoding='utf-8')
-print('Bundled DOCX runtime locally into www/vendor/docx.js')
+print(f'Bundled DOCX browser UMD runtime locally from {src.name} into www/vendor/docx.js')
