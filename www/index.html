@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>ResuMate — 50 Templates • AI • PDF Import • DOCX</title>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -45,10 +45,15 @@
             font-family: 'IBM Plex Sans', sans-serif;
             color: var(--ink);
             min-height: 100vh;
+            min-height: -webkit-fill-available;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            padding-left: env(safe-area-inset-left, 0px);
+            padding-right: env(safe-area-inset-right, 0px);
         }
         .app {
             width: 100%;
@@ -63,6 +68,8 @@
             flex-direction: column;
             border: 1px solid rgba(156, 124, 62, .15);
             position: relative;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
         .status-bar {
             padding: 8px 20px 4px;
@@ -1680,11 +1687,16 @@
         .dark .tmpl-card .preview-box .mini .tpl-ln {
             background: #555;
         }
-        @media(max-width:420px) {
+        @media(max-width:600px) {
+            body {
+                padding: 0;
+            }
             .app {
                 max-height: none;
-                height: 96vh;
-                border-radius: 12px;
+                height: 100vh;
+                height: 100dvh;
+                border-radius: 0;
+                border: none;
             }
             .grid-2 {
                 grid-template-columns: 1fr 1fr;
@@ -2901,9 +2913,10 @@
                     archetype: arche.key,
                     mood,
                     render: function(s) {
-                        const currentFont = state.font || 'Inter';
-                        const acc = tplAccent(this.accent);
-                        const base = `<div class="paper" style="--accent:${acc};--resume-font:'${currentFont}',sans-serif;font-family:'${currentFont}',sans-serif">`;
+                        const currentFont = state.font || this.font || 'Inter';
+                        const acc = state.textColor || tplAccent(this.accent);
+                        const txtColor = state.textColor || 'inherit';
+                        const base = `<div class="paper" style="--accent:${acc};--resume-text:${txtColor};--resume-heading:${txtColor};--resume-font:'${currentFont}',sans-serif;font-family:'${currentFont}',sans-serif;color:${txtColor}">`;
                         const close = `</div>`;
                         return `${base}${arche.render(s, acc, this.mood)}${close}`;
                     }
@@ -3973,7 +3986,7 @@
             <div class="card-glass" onclick="window.toggleDark()"><strong>Dark theme <span class="switch ${state.theme==='dark'?'on':''}"><i></i></span></strong><small>Change appearance.</small></div>
             <div class="card-glass"><strong>Default template</strong><select onchange="window.state.template=this.value;window.save();window.renderPreviewIfNeeded()" style="margin-top:6px;width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:11px">${TEMPLATES.map(x=>x.id).map(x=>`<option ${state.template===x?'selected':''}>${x}</option>`).join('')}</select></div>
             <div class="card-glass"><h4 style="font-size:13px;font-weight:600;margin:0 0 2px">Resume font <span class="pro-badge">PRO</span></h4><div class="font-grid-sm">${['Inter','DM Sans','Manrope','Poppins','Montserrat','Roboto','Open Sans','Lato','Source Sans 3','Nunito','Raleway'].map(f=>`<button class="font-opt ${state.font===f?'active':''}" style="font-family:${f}" onclick="window.setResumeFont('${f}')">${f}</button>`).join('')}</div></div>
-            <div class="card-glass"><h4 style="font-size:13px;font-weight:600;margin:0 0 2px">Text color <span class="pro-badge">PRO</span></h4><div class="color-row-sm">${['#181A1F','#1E3A5F','#3F6B4F','#6B3F3F','#5B4B7A'].map(c=>`<button class="color-swatch-sm ${state.textColor===c?'active':''}" style="background:${c}" onclick="window.setResumeTextColor('${c}')"></button>`).join('')}</div></div>
+            <div class="card-glass"><h4 style="font-size:13px;font-weight:600;margin:0 0 2px">Text color / Auto Accent <span class="pro-badge">PRO</span></h4><div class="color-row-sm">${['#181A1F','#1E3A5F','#3F6B4F','#6B3F3F','#5B4B7A','#2A5298','#008080','#8B0000','#D4AF37','#2E8B57'].map(c=>`<button class="color-swatch-sm ${state.textColor===c?'active':''}" style="background:${c}" onclick="window.setResumeTextColor('${c}')"></button>`).join('')}</div></div>
             <div class="card-glass"><strong>Premium features <span class="pro-badge">FREE</span></strong><small>All unlocked.</small></div>
             <div class="card-glass"><strong>Watermark</strong><span class="switch ${state.watermark?'on':''}" style="float:right" onclick="window.state.watermark=!window.state.watermark;window.save();window.renderSettings();window.renderPreviewIfNeeded()"><i></i></span><small>${state.watermark?'Enabled':'Disabled'}.</small></div>
             <div class="card-glass"><strong>Local autosave</strong><small>Enabled.</small></div>
@@ -4057,19 +4070,53 @@
             // ─── PDF ─────────────────────────────────────────────────────
             function performPremiumPDFExport() {
                 closeOverlay('pdfExport');
-                const printArea = document.getElementById('printArea');
-                if (!printArea) return;
-                printArea.innerHTML = `<div class="premium-print-document">${resumeHTML()}</div>`;
-                printArea.style.display = 'block';
-                document.body.classList.add('printing-resume');
-                const cleanup = () => { printArea.style.display = 'none';
-                    printArea.innerHTML = '';
-                    document.body.classList.remove('printing-resume');
-                    window.removeEventListener('afterprint', cleanup); };
-                window.addEventListener('afterprint', cleanup);
-                setTimeout(() => { window.print();
-                    setTimeout(cleanup, 1800); }, 80);
-                toast('PDF ready — choose Save as PDF');
+                toast('Generating PDF...');
+
+                if (typeof html2pdf !== 'undefined') {
+                    const temp = document.createElement('div');
+                    temp.style.width = '800px';
+                    temp.style.padding = '20px';
+                    temp.style.background = '#ffffff';
+                    temp.style.color = '#181A1F';
+                    temp.innerHTML = resumeHTML();
+                    document.body.appendChild(temp);
+
+                    const filename = (state.profile.name || 'Resume').replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf';
+                    const opt = {
+                        margin: 10,
+                        filename: filename,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, useCORS: true, logging: false },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+
+                    html2pdf().set(opt).from(temp).save().then(() => {
+                        document.body.removeChild(temp);
+                        toast('PDF exported successfully!');
+                    }).catch(err => {
+                        if (document.body.contains(temp)) document.body.removeChild(temp);
+                        toast('PDF export error, printing fallback...');
+                        window.print();
+                    });
+                } else {
+                    const printArea = document.getElementById('printArea');
+                    if (!printArea) return;
+                    printArea.innerHTML = `<div class="premium-print-document">${resumeHTML()}</div>`;
+                    printArea.style.display = 'block';
+                    document.body.classList.add('printing-resume');
+                    const cleanup = () => {
+                        printArea.style.display = 'none';
+                        printArea.innerHTML = '';
+                        document.body.classList.remove('printing-resume');
+                        window.removeEventListener('afterprint', cleanup);
+                    };
+                    window.addEventListener('afterprint', cleanup);
+                    setTimeout(() => {
+                        window.print();
+                        setTimeout(cleanup, 1800);
+                    }, 80);
+                    toast('PDF ready — choose Save as PDF');
+                }
             }
             window.performPremiumPDFExport = performPremiumPDFExport;
 
@@ -4144,12 +4191,26 @@
                         }]
                     });
                     Packer.toBlob(doc).then(blob => {
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = 'Resume.docx';
-                        link.click();
-                        URL.revokeObjectURL(link.href);
-                        toast('DOCX exported');
+                        const filename = (state.profile.name || 'Resume').replace(/[^a-zA-Z0-9_\-]/g, '_') + '.docx';
+                        if (navigator.share && window.Capacitor) {
+                            const reader = new FileReader();
+                            reader.readAsDataURL(blob);
+                            reader.onloadend = () => {
+                                const base64data = reader.result;
+                                const link = document.createElement('a');
+                                link.href = base64data;
+                                link.download = filename;
+                                link.click();
+                                toast('DOCX generated');
+                            };
+                        } else {
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = filename;
+                            link.click();
+                            setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+                            toast('DOCX exported');
+                        }
                     });
                 } catch (e) { toast('DOCX export error: ' + e.message); }
             }
