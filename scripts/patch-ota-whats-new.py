@@ -24,13 +24,9 @@ script = r'''
     const s=document.createElement('style');
     s.id=styleId;
     s.textContent='@keyframes resumateOtaBlink{0%,100%{filter:brightness(1);box-shadow:0 2px 10px rgba(0,0,0,.22)}50%{filter:brightness(1.15);box-shadow:0 0 0 4px rgba(34,197,94,.18),0 0 18px rgba(34,197,94,.65)}}'
-      +'#resumate-ota-status{display:block!important;position:fixed!important;top:8px!important;right:10px!important;z-index:2147483647!important;pointer-events:auto!important;}'
+      +'#resumate-ota-status{display:block!important;position:fixed!important;top:8px!important;right:10px!important;z-index:2147483647!important;pointer-events:auto!important;touch-action:manipulation!important;}'
       +'#resumate-ota-status.resumate-update-ready{background:#22c55e!important;color:#fff!important;border-color:#16a34a!important;animation:resumateOtaBlink 1.1s ease-in-out infinite!important}'
       +'html,body{margin-top:0!important;padding-top:0!important;}'
-      +'.status-bar{display:none!important;pointer-events:none!important;}'
-      +'.view:not(.active){pointer-events:none!important;}'
-      +'.view.active{pointer-events:auto!important;}'
-      +'.overlay:not(.show){pointer-events:none!important;}'
       +'button,a,input,select,textarea,[role="button"]{touch-action:manipulation;}';
     document.head.appendChild(s);
   }
@@ -118,23 +114,16 @@ script = r'''
     checkUpdate();
   }
 
-  function repairTouchLayers(){
-    document.querySelectorAll('.view:not(.active)').forEach(function(el){el.style.pointerEvents='none';});
-    document.querySelectorAll('.view.active').forEach(function(el){el.style.pointerEvents='auto';});
-    document.querySelectorAll('.overlay:not(.show)').forEach(function(el){el.style.pointerEvents='none';});
-    const hiddenWelcome=document.getElementById('welcome');
-    if(hiddenWelcome && !hiddenWelcome.classList.contains('show')) hiddenWelcome.style.pointerEvents='none';
-  }
-
-  const observer=new MutationObserver(function(){ bind(); repairTouchLayers(); });
   function start(){
     ensureStyle();
     bind();
-    repairTouchLayers();
-    observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style','hidden','aria-hidden']});
+    // Observe only DOM additions. Do not observe style/class mutations: the
+    // previous implementation changed pointer-events from inside its own
+    // MutationObserver, which could create a mutation loop and block touches.
+    const observer=new MutationObserver(function(){ bind(); });
+    observer.observe(document.body,{childList:true,subtree:true});
     setInterval(checkUpdate,30000);
-    setInterval(repairTouchLayers,2000);
-    document.addEventListener('visibilitychange',function(){if(!document.hidden){checkUpdate();repairTouchLayers();}});
+    document.addEventListener('visibilitychange',function(){if(!document.hidden) checkUpdate();});
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
@@ -147,4 +136,4 @@ if 'resumate-ota-whats-new-style' not in text:
     text = text.replace('</body>', script + '</body>', 1)
 
 INDEX.write_text(text, encoding='utf-8')
-print('Hardened ResuMate touch handling, removed extra web top padding, kept native status bar separate, and preserved persistent OTA What\'s New toggle')
+print('Fixed global touch blocking regression; preserved OTA toggle and removed only unsafe touch-layer interception logic')
