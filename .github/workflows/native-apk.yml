@@ -90,35 +90,49 @@ jobs:
           p.write_text(s, encoding="utf-8")
           PY
 
-      - name: Build release APK
+      # A release build without a configured release keystore produces
+      # app-release-unsigned.apk. Build the Capacitor debug variant instead;
+      # Android Gradle signs it automatically with the standard debug key.
+      # This produces a valid sideload/test APK. Production Play distribution
+      # should use a protected release keystore and an AAB.
+      - name: Build signed installable APK
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Verify and prepare APK
+      - name: Verify APK signature and package
         run: |
           set -euo pipefail
 
-          echo "Searching for generated APK..."
-          find android/app/build/outputs -type f -name "*.apk" -print
-
-          APK="$(find android/app/build/outputs/apk -type f -name "*.apk" -print -quit)"
+          APK="$(find android/app/build/outputs/apk/debug -type f -name "*.apk" -print -quit)"
 
           if [ -z "$APK" ]; then
-            echo "ERROR: No APK was generated under android/app/build/outputs/apk"
+            echo "ERROR: No debug APK was generated."
             exit 1
           fi
 
-          echo "Using APK: $APK"
           test -s "$APK"
+          echo "APK: $APK"
+
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          if [ -z "$APKSIGNER" ]; then
+            echo "ERROR: Android apksigner not found."
+            exit 1
+          fi
+
+          echo "Verifying APK cryptographic signature..."
+          "$APKSIGNER" verify --verbose "$APK"
+
+          echo "Reading APK package metadata..."
+          "$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest application-id "$APK"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest version-name "$APK"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest version-code "$APK"
 
           mkdir -p dist
+          OUT="dist/ResuMate2-${{ env.NATIVE_APP_VERSION }}.apk"
+          cp "$APK" "$OUT"
 
-          cp "$APK" "dist/ResuMate2-${{ env.NATIVE_APP_VERSION }}.apk"
-
-          sha256sum "dist/ResuMate2-${{ env.NATIVE_APP_VERSION }}.apk" \
-            | tee "dist/ResuMate2-${{ env.NATIVE_APP_VERSION }}.apk.sha256"
-
-          echo "APK prepared successfully:"
+          sha256sum "$OUT" | tee "$OUT.sha256"
+          echo "Verified signed APK:"
           ls -lh dist/
 
       - name: Upload APK artifact
