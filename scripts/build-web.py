@@ -65,11 +65,10 @@ def main() -> None:
         raise SystemExit("Generated bundle is missing diagnostics")
     if "ResuMate interaction recovery" not in text:
         raise SystemExit("Generated bundle is missing interaction recovery")
-    if not any(marker in text for marker in (
-        "ResuMate OTA capture handler v3",
-        "ResuMate OTA capture handler v2",
-    )):
-        raise SystemExit("Generated bundle is missing OTA click capture")
+    if "ResuMate OTA capture handler v3" not in text:
+        raise SystemExit("Generated bundle is missing the current OTA click capture handler v3")
+    if "ResuMate OTA capture handler v2" in text:
+        raise SystemExit("Generated bundle contains obsolete OTA click capture handler v2")
     run("health-check.py")
 
     print(f"Built {OUTPUT.relative_to(ROOT)} from {SOURCE.relative_to(ROOT)}")
