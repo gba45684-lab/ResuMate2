@@ -24,7 +24,7 @@ script = r'''
     const s=document.createElement('style');
     s.id=styleId;
     s.textContent='@keyframes resumateOtaBlink{0%,100%{filter:brightness(1);box-shadow:0 2px 10px rgba(0,0,0,.22)}50%{filter:brightness(1.15);box-shadow:0 0 0 4px rgba(34,197,94,.18),0 0 18px rgba(34,197,94,.65)}}'
-      +'#resumate-ota-status{display:block!important;position:fixed!important;top:8px!important;right:auto!important;left:50%!important;transform:translateX(72px)!important;z-index:2147483647!important;pointer-events:auto!important;touch-action:manipulation!important;}'
+      +'#resumate-ota-status{display:block!important;position:fixed!important;top:max(32px,calc(env(safe-area-inset-top,0px) + 8px))!important;right:auto!important;left:12px!important;transform:none!important;z-index:2147483647!important;pointer-events:auto!important;touch-action:manipulation!important;}'
       +'#resumate-ota-status.resumate-update-ready{background:#22c55e!important;color:#fff!important;border-color:#16a34a!important;animation:resumateOtaBlink 1.1s ease-in-out infinite!important}'
       +'html,body{margin-top:0!important;padding-top:0!important;}'
       +'button,a,input,select,textarea,[role="button"]{touch-action:manipulation;}';
@@ -136,4 +136,4 @@ if 'resumate-ota-whats-new-style' not in text:
     text = text.replace('</body>', script + '</body>', 1)
 
 INDEX.write_text(text, encoding='utf-8')
-print('Fixed OTA toggle placement while preserving update/What\'s New functionality')
+print('Fixed OTA toggle position below Android status bar; preserved OTA update and What\'s New functionality')
