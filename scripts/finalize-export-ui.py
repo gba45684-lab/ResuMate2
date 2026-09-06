@@ -30,9 +30,9 @@ pdf = '''            async function performPremiumPDFExport() {
                 try {
                     if (typeof html2pdf === 'undefined') throw new Error('PDF library not loaded');
 
-                    // Export the same rendered resume, but use a true A4 page canvas with
-                    // controlled page margins. The previous JPEG/scale-2 pipeline softened
-                    // small text; PNG at high DPI keeps characters and thin rules crisp.
+                    // Keep ResuMate's standard A4 resume page, but match the reference's
+                    // measured visual whitespace: about 18mm on left/right and 12mm top.
+                    // Do not change the on-screen resume UI or its template geometry.
                     temp = document.createElement('div');
                     temp.className = 'resumate-pdf-export-root';
                     temp.style.width = '210mm';
@@ -57,10 +57,11 @@ pdf = '''            async function performPremiumPDFExport() {
                     temp.prepend(printStyle);
                     document.body.appendChild(temp);
 
-                    // Reference-page margin target: restrained, even whitespace on all four
-                    // sides instead of the old 10mm margin + 20px wrapper double-padding.
+                    // html2pdf margin order: [top, left, bottom, right].
+                    // These values remove the previous 14mm side-gap mismatch while
+                    // keeping a restrained, reference-like top/bottom whitespace.
                     const opt = {
-                        margin: [14, 14, 16, 14],
+                        margin: [12, 18, 12, 18],
                         filename,
                         image: { type: 'png', quality: 1 },
                         pagebreak: { mode: ['css', 'legacy'], avoid: ['.avoid-break'] },
@@ -127,9 +128,9 @@ docx = '''            async function exportDOCX() {
                     source.innerHTML = resumeHTML();
                     document.body.appendChild(source);
                     const lines = String(source.innerText || source.textContent || '')
-                        .replace(/\\u00a0/g, ' ')
-                        .split(/\\r?\\n/)
-                        .map(s => s.replace(/[ \\t]+/g, ' ').trim())
+                        .replace(/\u00a0/g, ' ')
+                        .split(/\r?\n/)
+                        .map(s => s.replace(/[ \t]+/g, ' ').trim())
                         .filter(Boolean);
                     const children = lines.map(line => new Paragraph({
                         children: [new TextRun({ text: line, size: 20 })],
@@ -163,4 +164,4 @@ docx = '''            async function exportDOCX() {
 text = replace_function(text, 'exportDOCX', docx, 'window.exportDOCX = exportDOCX;')
 
 INDEX.write_text(text, encoding='utf-8')
-print('Finalized high-quality A4 PDF export: PNG/high-DPI rendering, controlled full-page margins, and no print dialog')
+print('Fixed A4 PDF export margins to 18mm left/right and 12mm top/bottom while preserving high-DPI direct export')
