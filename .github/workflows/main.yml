@@ -36,6 +36,9 @@ jobs:
       - name: Build web bundle
         run: python3 scripts/build-web.py
 
+      - name: Post-build functional smoke checks
+        run: python3 scripts/postbuild-smoke.py
+
       - name: Verify generated bundle
         run: |
           set -euo pipefail
