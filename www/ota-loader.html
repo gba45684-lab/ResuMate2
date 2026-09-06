@@ -16,29 +16,43 @@ const APP_URL='https://raw.githubusercontent.com/gba45684-lab/ResuMate2/ota/inde
 const CACHE_KEY='resumate.ota.bundle.v7';
 const PREVIOUS_KEY='resumate.ota.previous.v1';
 const ACTIVE_KEY='resumate.ota.active.v3';
+const PENDING_KEY='resumate.ota.boot.pending.v1';
+const SUCCESS_KEY='resumate.ota.boot.success.v1';
 const FALLBACK='fallback.html';
 const text=document.getElementById('ota-text'),error=document.getElementById('ota-error');
 const status=s=>text.textContent=s;
 const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(_){return null}};
-const write=(version,html)=>{try{const old=read(CACHE_KEY);if(old&&old.version!==version)localStorage.setItem(PREVIOUS_KEY,JSON.stringify(old));localStorage.setItem(CACHE_KEY,JSON.stringify({version,html,savedAt:Date.now()}));localStorage.setItem(ACTIVE_KEY,version);return true}catch(_){return false}};
+const write=(version,html)=>{try{const old=read(CACHE_KEY);if(old&&old.version!==version)localStorage.setItem(PREVIOUS_KEY,JSON.stringify(old));localStorage.setItem(CACHE_KEY,JSON.stringify({version,html,savedAt:Date.now()}));localStorage.setItem(ACTIVE_KEY,version);localStorage.setItem(PENDING_KEY,JSON.stringify({version,startedAt:Date.now()}));localStorage.removeItem(SUCCESS_KEY);return true}catch(_){return false}};
+function prepareRollback(){
+  try{
+    const pending=read(PENDING_KEY), success=read(SUCCESS_KEY);
+    if(!pending || !pending.version) return false;
+    if(success && success.version===pending.version){localStorage.removeItem(PENDING_KEY);return false;}
+    if(Date.now()-Number(pending.startedAt||0)<8000) return false;
+    const prev=read(PREVIOUS_KEY);
+    if(prev&&prev.html){localStorage.setItem(CACHE_KEY,JSON.stringify(prev));localStorage.setItem(ACTIVE_KEY,prev.version);localStorage.removeItem(PENDING_KEY);localStorage.removeItem(SUCCESS_KEY);return true;}
+  }catch(_){ }
+  return false;
+}
 async function sha256(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 function run(html){document.open();document.write(html);document.close()}
 function installDynamicUpdater(html){
- const code='(function(){"use strict";const V='+JSON.stringify(VERSION_URL)+',A='+JSON.stringify(APP_URL)+',K='+JSON.stringify(CACHE_KEY)+',P='+JSON.stringify(PREVIOUS_KEY)+',AK='+JSON.stringify(ACTIVE_KEY)+',DEF=300000;let busy=false;const sleep=ms=>new Promise(r=>setTimeout(r,ms));async function hash(v){const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,"0")).join("")}async function fetchJson(){for(let i=0;i<3;i++){try{const r=await fetch(V+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw Error("manifest");return await r.json()}catch(_){if(i<2)await sleep(1000*(i+1))}}return null}async function update(){if(busy)return;busy=true;try{const m=await fetchJson();if(!m||!m.otaVersion||!m.sha256)return;const current=localStorage.getItem(AK);if(current===m.otaVersion)return;if((m.updateMode||"auto")==="manual")return;const r=await fetch(A+"?v="+encodeURIComponent(m.otaVersion)+"&t="+Date.now(),{cache:"no-store"});if(!r.ok)throw Error("bundle");const h=await r.text();if(!h||h.length<1000)throw Error("empty");if((await hash(h)).toLowerCase()!==String(m.sha256).toLowerCase())throw Error("integrity");const old=localStorage.getItem(K);if(old&&old!==h)localStorage.setItem(P,old);localStorage.setItem(K,JSON.stringify({version:m.otaVersion,html:h,savedAt:Date.now()}));localStorage.setItem(AK,m.otaVersion);if(m.autoApply!==false)location.reload()}catch(_){}finally{busy=false}}setTimeout(update,15000);let timer=null;function schedule(ms){clearInterval(timer);timer=setInterval(update,Math.max(30000,ms||DEF))}fetchJson().then(m=>schedule(m&&m.pollIntervalMs||DEF)).catch(()=>schedule(DEF));document.addEventListener("visibilitychange",()=>{if(!document.hidden)update()});window.ResuMateOTA={check:update,reload:()=>location.reload()}})();';
+ const code='(function(){"use strict";const V='+JSON.stringify(VERSION_URL)+',A='+JSON.stringify(APP_URL)+',K='+JSON.stringify(CACHE_KEY)+',P='+JSON.stringify(PREVIOUS_KEY)+',AK='+JSON.stringify(ACTIVE_KEY)+',PK='+JSON.stringify(PENDING_KEY)+',SK='+JSON.stringify(SUCCESS_KEY)+',DEF=300000;let busy=false;const sleep=ms=>new Promise(r=>setTimeout(r,ms));async function hash(v){const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,"0")).join("")}async function fetchJson(){for(let i=0;i<3;i++){try{const r=await fetch(V+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw Error("manifest");return await r.json()}catch(_){if(i<2)await sleep(1000*(i+1))}}return null}async function update(){if(busy)return;busy=true;try{const m=await fetchJson();if(!m||!m.otaVersion||!m.sha256)return;const current=localStorage.getItem(AK);if(current===m.otaVersion)return;if((m.updateMode||"auto")==="manual")return;const r=await fetch(A+"?v="+encodeURIComponent(m.otaVersion)+"&t="+Date.now(),{cache:"no-store"});if(!r.ok)throw Error("bundle");const h=await r.text();if(!h||h.length<1000)throw Error("empty");if((await hash(h)).toLowerCase()!==String(m.sha256).toLowerCase())throw Error("integrity");const old=localStorage.getItem(K);if(old&&old!==h)localStorage.setItem(P,old);localStorage.setItem(K,JSON.stringify({version:m.otaVersion,html:h,savedAt:Date.now()}));localStorage.setItem(AK,m.otaVersion);localStorage.setItem(PK,JSON.stringify({version:m.otaVersion,startedAt:Date.now()}));localStorage.removeItem(SK);if(m.autoApply!==false)location.reload()}catch(_){}finally{busy=false}}setTimeout(update,15000);let timer=null;function schedule(ms){clearInterval(timer);timer=setInterval(update,Math.max(30000,ms||DEF))}fetchJson().then(m=>schedule(m&&m.pollIntervalMs||DEF)).catch(()=>schedule(DEF));document.addEventListener("visibilitychange",()=>{if(!document.hidden)update()});window.ResuMateOTAUpdateCheck=update;window.ResuMateOTA={check:update,reload:()=>location.reload()}})();';
  const updater='<script>'+code+'</scr'+'ipt>';
  return html.includes('</body>')?html.replace('</body>',updater+'</body>'):html+updater;
 }
 async function fetchManifest(){const r=await fetch(VERSION_URL+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('Update manifest HTTP '+r.status);const m=await r.json();if(!m.otaVersion||!m.sha256)throw Error('Invalid update manifest');return m}
 async function fetchVerified(m){const r=await fetch(APP_URL+'?v='+encodeURIComponent(m.otaVersion)+'&t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('Update bundle HTTP '+r.status);const h=await r.text();if(!h||h.length<1000)throw Error('Update bundle is empty or incomplete');if((await sha256(h)).toLowerCase()!==String(m.sha256).toLowerCase())throw Error('Update integrity check failed');return h}
 async function load(){
+ let rolledBack=prepareRollback();
  const cached=read(CACHE_KEY),previous=read(PREVIOUS_KEY);
  try{
-  status('Checking for the latest ResuMate update…');const m=await fetchManifest();
+  status(rolledBack?'Recovering the previous verified version…':'Checking for the latest ResuMate update…');const m=await fetchManifest();
   if(cached&&cached.version===m.otaVersion&&cached.html){run(installDynamicUpdater(cached.html));return}
   status('Preparing the latest ResuMate version…');const h=await fetchVerified(m);if(!write(m.otaVersion,h))throw Error('Unable to cache verified update');run(installDynamicUpdater(h));
  }catch(e){
   if(cached&&cached.html){status('Using the last verified ResuMate version.');setTimeout(()=>run(installDynamicUpdater(cached.html)),80);return}
-  if(previous&&previous.html){status('Recovering the previous verified version…');try{localStorage.setItem(CACHE_KEY,JSON.stringify(previous));localStorage.setItem(ACTIVE_KEY,previous.version);run(installDynamicUpdater(previous.html));return}catch(_){}}
+  if(previous&&previous.html){status('Recovering the previous verified version…');try{localStorage.setItem(CACHE_KEY,JSON.stringify(previous));localStorage.setItem(ACTIVE_KEY,previous.version);localStorage.removeItem(PENDING_KEY);run(installDynamicUpdater(previous.html));return}catch(_){}}
   try{status('Starting the bundled version…');const r=await fetch(FALLBACK,{cache:'no-store'});if(!r.ok)throw Error('Bundled fallback HTTP '+r.status);const h=await r.text();if(!h||h.length<1000)throw Error('Bundled fallback is empty or incomplete');run(h)}catch(f){status('ResuMate could not start.');error.textContent=String(e.message||e)+'\n'+String(f.message||f)}}
 }
 load();
