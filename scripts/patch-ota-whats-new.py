@@ -5,28 +5,80 @@ ROOT = Path(__file__).resolve().parents[1]
 INDEX = ROOT / 'www' / 'index.html'
 text = INDEX.read_text(encoding='utf-8')
 
-# Add a capture-phase click handler so tapping the OTA badge first shows the
-# release notes instead of immediately reloading. The existing updater remains
-# the final action after the user confirms.
+# Keep the OTA control visible at all times. When a newer bundle is available,
+# make it green and blink; tapping it opens What's New before applying the update.
 script = r'''
 <script>
 (function(){
   'use strict';
   const VERSION_URL='https://raw.githubusercontent.com/gba45684-lab/ResuMate2/ota/version.json';
   const id='resumate-ota-status';
+  const styleId='resumate-ota-whats-new-style';
   let manifest=null;
+
   function escapeHtml(value){
     return String(value).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c];});
   }
+
+  function ensureStyle(){
+    if(document.getElementById(styleId)) return;
+    const s=document.createElement('style');
+    s.id=styleId;
+    s.textContent='@keyframes resumateOtaBlink{0%,100%{filter:brightness(1);box-shadow:0 2px 10px rgba(0,0,0,.22)}50%{filter:brightness(1.15);box-shadow:0 0 0 4px rgba(34,197,94,.18),0 0 18px rgba(34,197,94,.65)}}#resumate-ota-status{display:block!important}#resumate-ota-status.resumate-update-ready{background:#22c55e!important;color:#fff!important;border-color:#16a34a!important;animation:resumateOtaBlink 1.1s ease-in-out infinite!important}';
+    document.head.appendChild(s);
+  }
+
+  function activeVersion(){
+    const keys=['resumate.ota.active.v3','resumate.ota.bundle.v7','resumate.ota.bundle.v3'];
+    for(const key of keys){
+      try{
+        const raw=localStorage.getItem(key);
+        if(!raw) continue;
+        const value=JSON.parse(raw);
+        const v=typeof value==='string' ? value : (value && (value.version||value.otaVersion||value.bundleVersion));
+        if(v) return String(v);
+      }catch(e){
+        const raw=localStorage.getItem(key);
+        if(raw) return raw;
+      }
+    }
+    return '';
+  }
+
+  async function checkUpdate(){
+    const b=document.getElementById(id);
+    if(!b) return;
+    b.style.display='block';
+    b.textContent='Update';
+    b.classList.remove('resumate-update-ready');
+    try{
+      const r=await fetch(VERSION_URL+'?whatsnew='+Date.now(),{cache:'no-store'});
+      if(!r.ok) return;
+      manifest=await r.json();
+      const published=String(manifest.version||manifest.otaVersion||manifest.bundleVersion||'');
+      const installed=activeVersion();
+      if(published && installed && published!==installed){
+        b.classList.add('resumate-update-ready');
+        b.textContent='NEW • Update';
+        b.title='New update available — tap to see What\'s New';
+      }else{
+        b.title='ResuMate update status';
+      }
+    }catch(e){
+      // Keep the neutral toggle visible when the manifest cannot be checked.
+    }
+  }
+
   function close(){
     const m=document.getElementById('resumate-ota-whats-new');
     if(m) m.remove();
   }
+
   function show(){
     close();
     const notes=Array.isArray(manifest && manifest.whatsNew) ? manifest.whatsNew.filter(Boolean) : [];
     const items=(notes.length ? notes : ['Latest ResuMate improvements and fixes.']).slice(0,8);
-    const version=String((manifest&& (manifest.appVersion||manifest.version)) || '');
+    const version=String((manifest && (manifest.appVersion||manifest.version)) || '');
     const wrap=document.createElement('div');
     wrap.id='resumate-ota-whats-new';
     wrap.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.48);display:flex;align-items:flex-start;justify-content:center;padding:64px 14px 20px;box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,sans-serif;';
@@ -40,17 +92,16 @@ script = r'''
     document.getElementById('resumate-ota-close').onclick=close;
     wrap.addEventListener('click',function(e){ if(e.target===wrap) close(); });
     document.getElementById('resumate-ota-apply').onclick=function(){
-      const b=document.getElementById(id);
       close();
-      if(b) b.click();
+      const b=document.getElementById(id);
+      if(b){
+        // Reuse the original updater after the user has reviewed What's New.
+        b.removeAttribute('data-whats-new-bound');
+        b.click();
+      }
     };
   }
-  async function load(){
-    try{
-      const r=await fetch(VERSION_URL+'?whatsnew='+Date.now(),{cache:'no-store'});
-      if(r.ok) manifest=await r.json();
-    }catch(e){}
-  }
+
   function bind(){
     const b=document.getElementById(id);
     if(!b || b.dataset.whatsNewBound) return;
@@ -60,19 +111,24 @@ script = r'''
       e.stopImmediatePropagation();
       show();
     },true);
-    load();
+    checkUpdate();
   }
+
   const observer=new MutationObserver(bind);
   function start(){
+    ensureStyle();
     bind();
     observer.observe(document.body,{childList:true});
+    setInterval(checkUpdate,30000);
+    document.addEventListener('visibilitychange',function(){if(!document.hidden) checkUpdate();});
   }
+
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
   else start();
 })();
 </script>
 '''
-if 'resumate-ota-whats-new' not in text:
+if 'resumate-ota-whats-new-style' not in text:
     text = text.replace('</body>', script + '</body>', 1)
 INDEX.write_text(text, encoding='utf-8')
-print('Added OTA What\'s New dialog with update confirmation')
+print('Added persistent OTA toggle, green blinking update state, and What\'s New confirmation dialog')
