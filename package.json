@@ -4,10 +4,12 @@
   "description": "ResuMate resume studio Android app",
   "private": true,
   "scripts": {
-    "build": "npm run sync",
+    "build": "npm run build:web",
+    "build:web": "python3 scripts/build-web.py",
     "sync": "npx cap sync android",
     "android:debug": "npx cap sync android && cd android && ./gradlew assembleDebug --no-daemon",
-    "test": "echo \"No automated tests configured\""
+    "test": "npm run build:web",
+    "test:web": "npm run build:web"
   },
   "keywords": ["resumate", "resume", "capacitor", "android"],
   "author": "",
