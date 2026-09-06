@@ -29,13 +29,15 @@ def main() -> None:
 
     text = BUNDLE.read_text(encoding="utf-8", errors="strict")
 
-    # Core generated/runtime surfaces.
+    # Runtime surfaces that must be present in the generated app bundle.
+    # ResuMateHealth is intentionally NOT checked here: health-check.py is a
+    # build-time validation gate and reports success during build; it is not a
+    # browser runtime object embedded in the published bundle.
     for needle, label in [
         ("resumate-ota-status", "OTA status control"),
         ("VERSION_URL", "OTA manifest URL"),
         ("ResuMateErrorEngine", "runtime error engine"),
         ("ResuMateDataProtection", "resume data protection"),
-        ("ResuMateHealth", "health engine"),
         ("html2pdf", "PDF export runtime"),
         ("docx", "DOCX runtime"),
         ("localStorage", "local persistence"),
@@ -61,7 +63,7 @@ def main() -> None:
         if re.search(pattern, text, re.I):
             fail(f"unsafe touch interception detected: {pattern}")
 
-    print("POST-BUILD SMOKE PASSED: core export, persistence, OTA, health, recovery and touch-safety surfaces present")
+    print("POST-BUILD SMOKE PASSED: core export, persistence, OTA, error/recovery and touch-safety surfaces present")
 
 
 if __name__ == "__main__":
