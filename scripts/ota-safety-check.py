@@ -57,7 +57,7 @@ def main() -> None:
         fail("successful boot marker is not recognized")
 
     # Prevent accidental weakening of cache/integrity guarantees.
-    if re.search(r"fetch\\(APP_URL[^\\n]*cache:\\s*['\"]default", text):
+    if re.search(r"fetch\(APP_URL[^\n]*cache:\s*['\"]default", text):
         fail("OTA bundle fetch must not use default cache")
 
     print("OTA SAFETY CHECK PASSED: staging, integrity verification and rollback paths are present")
