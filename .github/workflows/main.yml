@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 env:
-  NATIVE_APP_VERSION: '1.0.0'
+  NATIVE_APP_VERSION: '1.1.0'
 
 jobs:
   publish-ota:
@@ -41,6 +41,7 @@ jobs:
           test -f scripts/patch-theme-preview.py
           test -f scripts/finalize-export-ui.py
           test -f scripts/bundle-runtime-libs.py
+          test -f scripts/patch-theme-preview.py
           test ! -f index.html
 
       - name: Build verified OTA bundle
@@ -59,7 +60,7 @@ jobs:
           html = Path('ota-publish/index.html').read_bytes()
           sha = hashlib.sha256(html).hexdigest()
           version = os.environ.get('GITHUB_SHA', 'unknown')
-          native = os.environ.get('NATIVE_APP_VERSION', '1.0.0')
+          native = os.environ.get('NATIVE_APP_VERSION', '1.1.0')
           manifest = {
               'app': 'ResuMate2',
               'schemaVersion': 2,
