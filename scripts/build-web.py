@@ -19,6 +19,7 @@ REQUIRED = [
     ROOT / "scripts" / "patch-web.py",
     ROOT / "scripts" / "patch-ota-whats-new.py",
     ROOT / "scripts" / "patch-error-engine.py",
+    ROOT / "scripts" / "patch-data-protection.py",
     ROOT / "scripts" / "finalize-export-ui.py",
     ROOT / "scripts" / "bundle-runtime-libs.py",
     ROOT / "scripts" / "patch-theme-preview.py",
@@ -36,13 +37,13 @@ def main() -> None:
     if missing:
         raise SystemExit("Missing build inputs:\n" + "\n".join(missing))
 
-    # Always start from the canonical source; never patch an already-generated bundle.
     OUTPUT.write_text(SOURCE.read_text(encoding="utf-8"), encoding="utf-8")
 
     for script in (
         "patch-web.py",
         "patch-ota-whats-new.py",
         "patch-error-engine.py",
+        "patch-data-protection.py",
         "finalize-export-ui.py",
         "bundle-runtime-libs.py",
         "patch-theme-preview.py",
