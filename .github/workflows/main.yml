@@ -26,10 +26,12 @@ jobs:
           node-version: 22
           cache: npm
 
-      # package-lock.json predates the currently declared docx dependency.
-      # Use npm install for now; a lockfile refresh can be made separately.
+      # Keep the current workaround until package-lock.json is regenerated and verified.
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+
+      - name: Regression checks
+        run: python3 scripts/regression-check.py
 
       - name: Build web bundle
         run: python3 scripts/build-web.py
@@ -40,6 +42,8 @@ jobs:
           test -s www/index.html
           grep -q 'resumate-ota-status' www/index.html
           grep -q 'VERSION_URL' www/index.html
+          grep -q 'ResuMateErrorEngine' www/index.html
+          grep -q 'ResuMateDataProtection' www/index.html
           test ! -f index.html
 
       - name: Prepare OTA release
@@ -72,6 +76,8 @@ jobs:
               'autoApply': True,
               'pollIntervalMs': 300000,
               'rollbackEnabled': True,
+              'dataProtection': True,
+              'errorEngine': True,
               'whatsNew': whats_new,
               'features': {
                   'aiDoctor': True,
