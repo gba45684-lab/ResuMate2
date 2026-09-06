@@ -20,6 +20,7 @@ REQUIRED = [
     ROOT / "scripts" / "patch-ota-whats-new.py",
     ROOT / "scripts" / "patch-error-engine.py",
     ROOT / "scripts" / "patch-data-protection.py",
+    ROOT / "scripts" / "patch-diagnostics.py",
     ROOT / "scripts" / "finalize-export-ui.py",
     ROOT / "scripts" / "bundle-runtime-libs.py",
     ROOT / "scripts" / "patch-theme-preview.py",
@@ -44,6 +45,7 @@ def main() -> None:
         "patch-ota-whats-new.py",
         "patch-error-engine.py",
         "patch-data-protection.py",
+        "patch-diagnostics.py",
         "finalize-export-ui.py",
         "bundle-runtime-libs.py",
         "patch-theme-preview.py",
@@ -55,6 +57,8 @@ def main() -> None:
         raise SystemExit("Generated www/index.html is empty")
     if "resumate-ota-status" not in text:
         raise SystemExit("Generated bundle is missing the OTA status control")
+    if "ResuMateDiagnostics" not in text:
+        raise SystemExit("Generated bundle is missing diagnostics")
     run("health-check.py")
 
     print(f"Built {OUTPUT.relative_to(ROOT)} from {SOURCE.relative_to(ROOT)}")
