@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -35,6 +37,9 @@ jobs:
           test -f package.json
           test -f capacitor.config.json
           test -f www/index.html
+          test -f www/ota-loader.html
+          test -f www/app-source.html
+          test -f www/fallback.html
           test -f scripts/patch-web.py
           test -f scripts/patch-android.py
           test -f scripts/patch-android-ui.py
@@ -42,14 +47,52 @@ jobs:
           test -f scripts/bundle-runtime-libs.py
           test ! -f index.html
 
-      - name: Apply ResuMate web fixes
-        run: python3 scripts/patch-web.py
+      - name: Prepare OTA web build
+        run: |
+          cp www/app-source.html www/index.html
+          python3 scripts/patch-web.py
+          python3 scripts/finalize-export-ui.py
+          python3 scripts/bundle-runtime-libs.py
+          mkdir -p ota-publish
+          cp www/index.html ota-publish/index.html
+          sha256sum ota-publish/index.html | awk '{print $1}' > ota-publish/index.sha256
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          html = Path('ota-publish/index.html').read_bytes()
+          sha = hashlib.sha256(html).hexdigest()
+          version = os.environ.get('GITHUB_SHA', 'unknown')
+          manifest = {
+              'version': version,
+              'sha256': sha,
+              'generatedAt': os.environ.get('GITHUB_RUN_STARTED_AT', ''),
+              'app': 'ResuMate2',
+              'minNativeVersion': '1.0.0'
+          }
+          Path('ota-publish/version.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+          print(json.dumps(manifest, indent=2))
+          PY
+          cp www/ota-loader.html www/index.html
 
-      - name: Finalize direct PDF and exact-text DOCX export
-        run: python3 scripts/finalize-export-ui.py
-
-      - name: Bundle DOCX library for Android
-        run: python3 scripts/bundle-runtime-libs.py
+      - name: Publish verified OTA bundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin ota:refs/remotes/origin/ota || true
+          git checkout --orphan ota-publish-branch
+          git rm -rf . >/dev/null 2>&1 || true
+          cp ota-publish/index.html index.html
+          cp ota-publish/version.json version.json
+          git add index.html version.json
+          git commit -m "Publish OTA web build ${GITHUB_SHA}" --allow-empty
+          if git ls-remote --exit-code --heads origin ota >/dev/null 2>&1; then
+            git push origin HEAD:ota --force
+          else
+            git push origin HEAD:ota
+          fi
+          git checkout --detach "${GITHUB_SHA}"
 
       - name: Add Android platform if missing
         run: |
