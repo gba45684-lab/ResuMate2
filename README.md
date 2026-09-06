@@ -1,67 +1,94 @@
-# ResuMate — Android APK
+# ResuMate2
 
-ResuMate is a lightweight Capacitor Android app that packages the web app in `www/index.html` into an installable APK.
+ResuMate2 is a Capacitor Android app whose UI runs from a web bundle. The project is intentionally kept simple: **one canonical UI source, one web build command, one OTA workflow, and one native APK workflow**.
 
-## Clean project structure
+## Architecture
 
-`www/index.html` is the **single canonical app entry point**. The duplicate root `index.html` has been removed so the app cannot accidentally build from two different HTML copies.
+```text
+www/app-source.html       <- ONLY canonical UI/feature source
+        |
+        v
+scripts/build-web.py      <- ONE deterministic web build entry point
+        |
+        +-- patch-web.py
+        +-- patch-ota-whats-new.py
+        +-- finalize-export-ui.py
+        +-- bundle-runtime-libs.py
+        +-- patch-theme-preview.py
+        |
+        v
+www/index.html            <- generated web bundle; do not edit manually
+        |
+        +--> OTA branch    <- installed app updates web layer without APK reinstall
+        |
+        +--> Capacitor     <- packaged by native APK build
 
-Core files:
+scripts/patch-android.py
+scripts/patch-android-ui.py
+scripts/patch-android-icon.py
+        |
+        v
+Android native layer      <- only needed for native/device behavior
+```
 
-- `www/index.html` — current ResuMate UI/app
-- `capacitor.config.json` — app ID/name configuration
-- `package.json` / `package-lock.json` — Capacitor dependencies and build scripts
-- `.github/workflows/main.yml` — automatic GitHub Actions APK build
-- `settings.gradle` / `proguard-rules.pro` — Android build configuration
+## Golden rules
 
-The repository currently contains one HTML app source: `www/index.html`.
+1. **Edit `www/app-source.html` for normal UI, features, navigation and business logic.**
+2. **Never manually edit generated `www/index.html`.** Run `npm run build:web` instead.
+3. Keep native Android changes in the three `patch-android*.py` scripts; do not mix native fixes into the web source.
+4. OTA changes are web-layer changes and normally do **not** require a new APK.
+5. Changes to Android/native behavior require a new APK.
+6. Do not use global `pointer-events` or mutation-observer hacks to repair touch behavior. Fix the actual component/event logic.
+7. Keep the approved `ResuMate_Final_Aligned_Functional.html` visual design locked; refactoring must not redesign the UI.
 
-## Build APK automatically
-
-Every push to `main` starts the **Build ResuMate APK** GitHub Actions workflow. It:
-
-1. Installs Node.js 24 and Java 21.
-2. Runs `npm ci`.
-3. Verifies the clean project structure.
-4. Creates the Android platform when `android/` is not present.
-5. Runs `npx cap sync android` so the latest `www/index.html` is packaged.
-6. Runs `./gradlew assembleDebug`.
-7. Uploads `resumate-debug-apk` as a downloadable workflow artifact.
-
-## Download the APK
-
-1. Open the repository's **Actions** tab.
-2. Open the latest **Build ResuMate APK** run.
-3. Wait until the build job is green.
-4. Scroll to **Artifacts**.
-5. Download **resumate-debug-apk**.
-6. Unzip it and install `app-debug.apk` on an Android phone.
-
-## Local/Codespace build
+## Commands
 
 ```bash
 npm ci
-npx cap sync android
-cd android
-./gradlew assembleDebug --no-daemon
+npm run build:web       # build and validate the web bundle
+npm test                # same deterministic web validation
+npm run android:debug   # package the current web app into a debug APK
 ```
 
-APK output:
+## OTA flow
 
-```text
-android/app/build/outputs/apk/debug/app-debug.apk
+A push to `main` runs `.github/workflows/main.yml`. It builds the bundle from `www/app-source.html`, validates it, generates the OTA manifest, and publishes the web bundle to the `ota` branch.
+
+Installed apps poll the OTA manifest and can receive web UI/feature fixes without reinstalling the APK.
+
+## Native flow
+
+`.github/workflows/native-apk.yml` creates the Android platform when needed, syncs Capacitor, applies only the native patches, and builds a signed debug APK for testing. Native changes require installing the new APK.
+
+## Important files
+
+| Purpose | File |
+|---|---|
+| Canonical app | `www/app-source.html` |
+| Generated web bundle | `www/index.html` |
+| Offline fallback | `www/fallback.html` |
+| OTA bootstrap | `www/ota-loader.html` |
+| Web build entry point | `scripts/build-web.py` |
+| Web workflow | `.github/workflows/main.yml` |
+| Native workflow | `.github/workflows/native-apk.yml` |
+| Native bridge patch | `scripts/patch-android.py` |
+| Native status-bar patch | `scripts/patch-android-ui.py` |
+| Native icon patch | `scripts/patch-android-icon.py` |
+
+## Updating ResuMate
+
+For a normal UI or feature fix:
+
+```bash
+# edit only this file
+www/app-source.html
+
+# validate/build
+npm run build:web
+
+# commit and push to main
 ```
 
-## Updating the app
+The OTA workflow handles publication automatically. **Do not create a new APK for web-only fixes.**
 
-Replace only the canonical file:
-
-```text
-www/index.html
-```
-
-Then commit/push to `main`. GitHub Actions will automatically build a fresh APK from that version.
-
-## Release build
-
-The debug APK is intended for testing/personal installation. A Play Store release should use a properly configured signing keystore and Android App Bundle/release signing process; never commit the keystore or signing credentials to this repository.
+For a native Android fix, run the native workflow and install the resulting APK.
