@@ -7,6 +7,7 @@ patterns have not returned. Native OTA rollback is validated by the native
 loader/workflow and manifest, not by this generated web bundle check.
 """
 from pathlib import Path
+from html.parser import HTMLParser
 import re
 import sys
 
@@ -24,18 +25,33 @@ def require(text: str, needle: str, label: str) -> None:
         fail(f"missing {label}: {needle}")
 
 
+class ScriptTagParser(HTMLParser):
+    """Count actual HTML script elements, ignoring strings inside JavaScript."""
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=False)
+        self.open_count = 0
+        self.close_count = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() == "script":
+            self.open_count += 1
+
+    def handle_startendtag(self, tag, attrs):
+        if tag.lower() == "script":
+            self.open_count += 1
+            self.close_count += 1
+
+    def handle_endtag(self, tag):
+        if tag.lower() == "script":
+            self.close_count += 1
+
+
 def main() -> None:
     if not BUNDLE.is_file() or BUNDLE.stat().st_size < 10000:
         fail("generated www/index.html is missing or unexpectedly small")
 
     text = BUNDLE.read_text(encoding="utf-8", errors="strict")
 
-    # Runtime surfaces that must be present in the generated app bundle.
-    # ResuMateHealth is intentionally NOT checked here: health-check.py is a
-    # build-time validation gate and reports success during build; it is not a
-    # browser runtime object embedded in the published bundle.
-    # Native OTA rollback is also intentionally NOT checked here because its
-    # recovery logic lives in the native OTA loader/workflow, not the web bundle.
     for needle, label in [
         ("resumate-ota-status", "OTA status control"),
         ("VERSION_URL", "OTA manifest URL"),
@@ -48,13 +64,20 @@ def main() -> None:
     ]:
         require(text, needle, label)
 
-    # Basic document/script integrity.
     if not re.search(r"<!DOCTYPE html>", text, re.I):
         fail("generated bundle has no HTML doctype")
-    if text.count("<script") != text.count("</script>"):
-        fail("script tag count is unbalanced")
 
-    # Never allow the historical global touch-blocking patterns back in.
+    # Raw text.count() is unsafe because JavaScript/templates may contain
+    # literal <script or </script> strings. Parse the HTML structure instead.
+    parser = ScriptTagParser()
+    try:
+        parser.feed(text)
+        parser.close()
+    except Exception as exc:
+        fail(f"HTML parser rejected generated bundle: {exc}")
+    if parser.open_count != parser.close_count:
+        fail(f"script elements are unbalanced ({parser.open_count} open, {parser.close_count} close)")
+
     forbidden = [
         r"MutationObserver\([^\n]*\)\.observe\([^\n]*style",
         r"MutationObserver\([^\n]*\)\.observe\([^\n]*class",
