@@ -26,16 +26,15 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Synchronize package lockfile
+      - name: Verify package lockfile is synchronized
         run: |
           set -euo pipefail
           npm install --package-lock-only --ignore-scripts --no-audit --no-fund
           if ! git diff --quiet -- package-lock.json; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add package-lock.json
-            git commit -m "chore: synchronize npm lockfile"
-            git push origin HEAD:main
+            echo "ERROR: package-lock.json is out of sync with package.json."
+            echo "Regenerate and commit the lockfile from a development environment; CI will not mutate main during an OTA publish."
+            git diff -- package-lock.json
+            exit 1
           fi
 
       - name: Install dependencies
