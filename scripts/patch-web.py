@@ -16,6 +16,63 @@ css = '''
 if '/* ResuMate Android/browser navigation + export fixes */' not in text:
     text = text.replace('</style>', css + '    </style>', 1)
 
+# Visible OTA status control. It reports whether the installed app has the
+# currently published OTA bundle and lets the user force a fresh check.
+ota_ui = r'''
+<script>
+(function(){
+  'use strict';
+  const VERSION_URL='https://raw.githubusercontent.com/gba45684-lab/ResuMate2/ota/version.json';
+  const CACHE_KEY='resumate.ota.bundle.v3';
+  const id='resumate-ota-status';
+  function ensure(){
+    if(document.getElementById(id)) return document.getElementById(id);
+    const b=document.createElement('button');
+    b.id=id;
+    b.type='button';
+    b.setAttribute('aria-label','ResuMate update status');
+    b.style.cssText='position:fixed;right:10px;bottom:10px;z-index:2147483647;border:1px solid #d7dbe0;border-radius:999px;background:#fff;color:#333;box-shadow:0 2px 10px rgba(0,0,0,.12);padding:7px 11px;font:600 11px system-ui,-apple-system,Segoe UI,sans-serif;cursor:pointer;display:none;max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+    document.body.appendChild(b);
+    b.addEventListener('click',function(){
+      b.textContent='↻ Checking update…';
+      b.style.display='block';
+      window.location.reload();
+    });
+    return b;
+  }
+  function set(text,title){
+    const b=ensure();
+    b.textContent=text;
+    b.title=title||text;
+    b.style.display='block';
+  }
+  async function check(){
+    try{
+      const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
+      const r=await fetch(VERSION_URL+'?status='+Date.now(),{cache:'no-store'});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const m=await r.json();
+      const published=String(m.version||m.otaVersion||'');
+      const installed=String(cached&&cached.version||'');
+      if(published && installed && published===installed){
+        set('✓ Fresh update','Installed version is up to date: '+published.slice(0,12));
+      }else if(published){
+        set('↻ Update available','New update '+published.slice(0,12)+' is available. Tap to refresh.');
+      }else{
+        set('? Update check','Could not read the published version. Tap to retry.');
+      }
+    }catch(e){
+      set('⚠ Update check failed','Tap to retry the OTA update check.');
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',check,{once:true});
+  else check();
+})();
+</script>
+'''
+if 'resumate-ota-status' not in text:
+    text = text.replace('</body>', ota_ui + '</body>', 1)
+
 old_back = '''            function smartBack() {
                 if (state.navHistory.length > 1) {
                     state.navHistory.pop();
@@ -162,4 +219,4 @@ if start != -1 and end != -1:
     text = text[:start] + new_docx + text[end:]
 
 INDEX.write_text(text, encoding='utf-8')
-print('Patched web UI: hidden simulated device status bar, navigation/back, PDF export, DOCX export, native download notifications')
+print('Patched web UI: hidden simulated device status bar, navigation/back, PDF export, DOCX export, native download notifications, visible OTA update status toggle')
