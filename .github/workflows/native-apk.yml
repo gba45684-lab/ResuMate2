@@ -1,0 +1,85 @@
+name: Build ResuMate Native APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Native APK version, e.g. 1.1.0'
+        required: true
+        default: '1.1.0'
+      version_code:
+        description: 'Android versionCode'
+        required: true
+        default: '2'
+
+permissions:
+  contents: write
+
+env:
+  NATIVE_APP_VERSION: ${{ inputs.version }}
+  NATIVE_VERSION_CODE: ${{ inputs.version_code }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Add Android platform if missing
+        run: |
+          if [ ! -d android ]; then npx cap add android; fi
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Apply native Android bridge and Back behavior
+        run: python3 scripts/patch-android.py
+
+      - name: Hide Android status bar
+        run: python3 scripts/patch-android-ui.py
+
+      - name: Apply themed Android launcher icon
+        run: python3 scripts/patch-android-icon.py
+
+      - name: Set native version
+        working-directory: android
+        run: |
+          python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          p=Path('app/build.gradle')
+          s=p.read_text(encoding='utf-8')
+          s=re.sub(r'versionName\s+"[^"]+"', f'versionName "{os.environ["NATIVE_APP_VERSION"]}"', s)
+          s=re.sub(r'versionCode\s+\d+', f'versionCode {os.environ["NATIVE_VERSION_CODE"]}', s)
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: Publish native APK release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: native-${{ env.NATIVE_APP_VERSION }}
+          name: ResuMate Native ${{ env.NATIVE_APP_VERSION }}
+          generate_release_notes: true
+          files: android/app/build/outputs/apk/release/app-release.apk
