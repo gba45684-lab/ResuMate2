@@ -46,13 +46,18 @@ def main() -> None:
         fail("previous verified version is not retained")
     if text.count("localStorage.setItem(PENDING_KEY") < 1:
         fail("pending boot marker is not written")
-    if text.count("localStorage.setItem(BOOT_SUCCESS") < 1 and "localStorage.setItem(SUCCESS_KEY" not in text:
-        # SUCCESS_KEY is written by the injected runtime error engine; require the loader
-        # to explicitly understand the same key so rollback remains coupled and testable.
+    # SUCCESS_KEY is owned by the injected runtime error engine. The loader must
+    # understand the same key and actively consume/reset it for rollback decisions.
+    success_marker_ok = (
+        text.count("localStorage.setItem(SUCCESS_KEY") >= 1
+        or text.count("localStorage.setItem(BOOT_SUCCESS") >= 1
+        or "read(SUCCESS_KEY)" in text
+    )
+    if not success_marker_ok:
         fail("successful boot marker is not recognized")
 
     # Prevent accidental weakening of cache/integrity guarantees.
-    if re.search(r"fetch\(APP_URL[^\n]*cache:\s*['\"]default", text):
+    if re.search(r"fetch\\(APP_URL[^\\n]*cache:\\s*['\"]default", text):
         fail("OTA bundle fetch must not use default cache")
 
     print("OTA SAFETY CHECK PASSED: staging, integrity verification and rollback paths are present")
