@@ -15,6 +15,7 @@ script = r'''
   const id='resumate-ota-status';
   const styleId='resumate-ota-whats-new-style';
   let manifest=null;
+  let applying=false;
 
   function escapeHtml(value){
     return String(value).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c];});
@@ -95,8 +96,7 @@ script = r'''
       close();
       const b=document.getElementById(id);
       if(b){
-        // Reuse the original updater after the user has reviewed What's New.
-        b.removeAttribute('data-whats-new-bound');
+        applying=true;
         b.click();
       }
     };
@@ -107,6 +107,7 @@ script = r'''
     if(!b || b.dataset.whatsNewBound) return;
     b.dataset.whatsNewBound='1';
     b.addEventListener('click',function(e){
+      if(applying){ applying=false; return; }
       e.preventDefault();
       e.stopImmediatePropagation();
       show();
