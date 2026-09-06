@@ -3,7 +3,8 @@
 
 This intentionally avoids a browser dependency in CI. It verifies that the
 published bundle contains the critical runtime surfaces and that known unsafe
-patterns have not returned.
+patterns have not returned. Native OTA rollback is validated by the native
+loader/workflow and manifest, not by this generated web bundle check.
 """
 from pathlib import Path
 import re
@@ -33,6 +34,8 @@ def main() -> None:
     # ResuMateHealth is intentionally NOT checked here: health-check.py is a
     # build-time validation gate and reports success during build; it is not a
     # browser runtime object embedded in the published bundle.
+    # Native OTA rollback is also intentionally NOT checked here because its
+    # recovery logic lives in the native OTA loader/workflow, not the web bundle.
     for needle, label in [
         ("resumate-ota-status", "OTA status control"),
         ("VERSION_URL", "OTA manifest URL"),
@@ -42,7 +45,6 @@ def main() -> None:
         ("docx", "DOCX runtime"),
         ("localStorage", "local persistence"),
         ("whatsNew", "OTA What’s New data"),
-        ("rollback", "OTA rollback logic"),
     ]:
         require(text, needle, label)
 
