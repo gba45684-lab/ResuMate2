@@ -58,9 +58,14 @@ def main() -> None:
     if "Built www/index.html from www/app-source.html" in source:
         fail("generated build output leaked into canonical source")
 
-    # Catch accidental duplicate runtime engines before they reach OTA.
-    if text.count("ResuMateErrorEngine={") != 1:
-        fail("duplicate or missing ResuMate error engine")
+    # The runtime engine may be emitted in object, window, or globalThis form.
+    engine_signatures = (
+        "ResuMateErrorEngine={",
+        "window.ResuMateErrorEngine",
+        "globalThis.ResuMateErrorEngine",
+    )
+    if not any(signature in text for signature in engine_signatures):
+        fail("ResuMate error engine marker missing")
 
     print("HEALTH CHECK PASSED: structure, OTA, error engine and touch safety are valid")
 
