@@ -43,8 +43,24 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Verify native build inputs
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import re
+
+          version = os.environ["NATIVE_APP_VERSION"]
+          version_code = os.environ["NATIVE_VERSION_CODE"]
+          if not re.fullmatch(r"\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?", version):
+              raise SystemExit(f"Invalid native version: {version!r}")
+          if not re.fullmatch(r"[1-9]\d*", version_code):
+              raise SystemExit(f"Invalid Android versionCode: {version_code!r}")
+          print(f"Validated native version={version}, versionCode={version_code}")
+          PY
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Add Android platform if missing
         run: |
