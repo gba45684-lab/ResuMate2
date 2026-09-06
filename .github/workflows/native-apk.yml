@@ -83,3 +83,27 @@ jobs:
           name: ResuMate Native ${{ env.NATIVE_APP_VERSION }}
           generate_release_notes: true
           files: android/app/build/outputs/apk/release/app-release.apk
+
+          - name: Verify and prepare APK
+  run: |
+    set -euo pipefail
+
+    APK="android/app/build/outputs/apk/release/app-release.apk"
+
+    echo "Checking APK..."
+    test -s "$APK"
+
+    mkdir -p dist
+
+    cp "$APK" "dist/ResuMate2-${{ env.NATIVE_APP_VERSION }}.apk"
+
+    sha256sum "dist/ResuMate2-${{ env.NATIVE_APP_VERSION }}.apk" \
+      | tee "dist/ResuMate2-${{ env.NATIVE_APP_VERSION }}.apk.sha256"
+
+    ls -lh dist/
+
+    - name: Upload APK artifact
+  uses: actions/upload-artifact@v4
+  with:
+    name: ResuMate2-${{ env.NATIVE_APP_VERSION }}
+    path: dist/*
