@@ -4,59 +4,49 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ResuMate</title>
-<style>html,body{margin:0;width:100%;height:100%;background:#fff;color:#181a1f;font-family:system-ui,-apple-system,Segoe UI,sans-serif}#ota-status{min-height:100%;display:grid;place-items:center;padding:24px;box-sizing:border-box;text-align:center}.ota-card{max-width:420px}.ota-title{font-size:22px;font-weight:700;margin-bottom:8px}.ota-text{font-size:14px;line-height:1.5;color:#666}.ota-error{margin-top:12px;font-size:12px;color:#a33;white-space:pre-wrap;word-break:break-word}.ota-actions{margin-top:18px;display:none;gap:10px;justify-content:center}.ota-actions button{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer}.ota-primary{background:#181a1f;color:#fff}.ota-secondary{background:#eee;color:#181a1f}</style>
+<style>html,body{margin:0;width:100%;height:100%;background:#fff;color:#181a1f;font-family:system-ui,-apple-system,Segoe UI,sans-serif}#ota-status{min-height:100%;display:grid;place-items:center;padding:24px;box-sizing:border-box;text-align:center}.ota-card{max-width:420px}.ota-title{font-size:22px;font-weight:700;margin-bottom:8px}.ota-text{font-size:14px;line-height:1.5;color:#666}.ota-error{margin-top:12px;font-size:12px;color:#a33;white-space:pre-wrap;word-break:break-word}.ota-actions{margin-top:18px;display:none;gap:10px;justify-content:center}.ota-actions button{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer}</style>
 </head>
 <body>
-<div id="ota-status"><div class="ota-card"><div class="ota-title">ResuMate</div><div class="ota-text" id="ota-text">Checking for the latest ResuMate update…</div><div class="ota-actions" id="ota-actions"><button class="ota-primary" id="ota-update">Full App Update</button><button class="ota-secondary" id="ota-continue">Continue Offline</button></div><div class="ota-error" id="ota-error"></div></div></div>
+<div id="ota-status"><div class="ota-card"><div class="ota-title">ResuMate</div><div class="ota-text" id="ota-text">Connecting to the latest ResuMate…</div><div class="ota-error" id="ota-error"></div></div></div>
 <script>
 (function(){
-  'use strict';
-  const VERSION_URL='https://raw.githubusercontent.com/gba45684-lab/ResuMate2/ota/version.json';
-  const APP_URL='https://raw.githubusercontent.com/gba45684-lab/ResuMate2/ota/index.html';
-  const CACHE_KEY='resumate.ota.bundle.v4';
-  const FALLBACK='fallback.html';
-  const text=document.getElementById('ota-text');
-  const error=document.getElementById('ota-error');
-  const actions=document.getElementById('ota-actions');
-  const updateBtn=document.getElementById('ota-update');
-  const continueBtn=document.getElementById('ota-continue');
-  const setStatus=(s,e)=>{text.textContent=s;if(e)error.textContent=e};
-  const readCache=()=>{try{return JSON.parse(localStorage.getItem(CACHE_KEY)||'null')}catch(_){return null}};
-  const writeCache=(v,h)=>{try{localStorage.setItem(CACHE_KEY,JSON.stringify({version:v,html:h}))}catch(_){} };
-  async function sha256(value){const bytes=new TextEncoder().encode(value);const digest=await crypto.subtle.digest('SHA-256',bytes);return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('')}
-  function run(html){document.open();document.write(html);document.close()}
-  function nativeVersion(){try{if(window.ResuMateNative&&typeof window.ResuMateNative.getNativeVersion==='function')return window.ResuMateNative.getNativeVersion()||'0.0.0'}catch(_){}return '0.0.0'}
-  function compare(a,b){const pa=String(a||'0.0.0').split('.').map(x=>parseInt(x,10)||0),pb=String(b||'0.0.0').split('.').map(x=>parseInt(x,10)||0);for(let i=0;i<3;i++){if((pa[i]||0)!==(pb[i]||0))return(pa[i]||0)>(pb[i]||0)?1:-1}return 0}
-  function openFullUpdate(url){try{if(window.ResuMateNative&&typeof window.ResuMateNative.openExternalUrl==='function'){window.ResuMateNative.openExternalUrl(url);return true}}catch(_){}try{window.location.href=url;return true}catch(_){return false}}
-  function showFullUpdate(url,reason){setStatus('Full App Update Available',reason||'Your installed app cannot safely use this update.');actions.style.display='flex';updateBtn.onclick=()=>openFullUpdate(url);continueBtn.onclick=()=>{actions.style.display='none';const cached=readCache();if(cached&&cached.html)run(cached.html);else{setStatus('Starting the bundled version…');fetch(FALLBACK,{cache:'no-store'}).then(r=>r.text()).then(run).catch(e=>setStatus('ResuMate could not start.',String(e.message||e)))}}}
-  async function load(){
-    const cached=readCache();
-    let manifest=null;
-    try{
-      setStatus('Checking for the latest ResuMate update…');
-      const stamp=Date.now();
-      const manifestResponse=await fetch(VERSION_URL+'?t='+stamp,{cache:'no-store'});
-      if(!manifestResponse.ok)throw new Error('Update manifest HTTP '+manifestResponse.status);
-      manifest=await manifestResponse.json();
-      if(!manifest.version||!manifest.sha256||!manifest.minimumNativeVersion||!manifest.apkUrl)throw new Error('Invalid update manifest');
-      const nv=nativeVersion();
-      if(compare(nv,manifest.minimumNativeVersion)<0){showFullUpdate(manifest.apkUrl,'Installed native version '+nv+' is below the required '+manifest.minimumNativeVersion+'.');return}
-      if(cached&&cached.version===manifest.version&&cached.html){run(cached.html);return}
-      setStatus('Downloading the latest ResuMate update…');
-      const appResponse=await fetch(APP_URL+'?v='+encodeURIComponent(manifest.version)+'&t='+stamp,{cache:'no-store'});
-      if(!appResponse.ok)throw new Error('Update bundle HTTP '+appResponse.status);
-      const html=await appResponse.text();
-      if(!html||html.length<1000)throw new Error('Update bundle is empty or incomplete');
-      const actual=await sha256(html);
-      if(actual.toLowerCase()!==String(manifest.sha256).toLowerCase())throw new Error('Update integrity check failed');
-      writeCache(manifest.version,html);run(html);
-    }catch(e){
-      if(manifest&&manifest.apkUrl){showFullUpdate(manifest.apkUrl,'OTA update could not be safely applied. Install the newest full app to continue.');return}
-      if(cached&&cached.html){setStatus('Offline mode — using the last verified update.');setTimeout(()=>run(cached.html),80);return}
-      try{setStatus('Starting the bundled version…');const fallback=await fetch(FALLBACK,{cache:'no-store'});if(!fallback.ok)throw new Error('Bundled fallback HTTP '+fallback.status);const html=await fallback.text();if(!html||html.length<1000)throw new Error('Bundled fallback is empty or incomplete');run(html)}catch(f){setStatus('ResuMate could not start.',String(e&&e.message||e)+'\n'+String(f&&f.message||f))}
-    }
-  }
-  load();
+'use strict';
+const VERSION_URL='https://raw.githubusercontent.com/gba45684-lab/ResuMate2/ota/version.json';
+const APP_URL='https://raw.githubusercontent.com/gba45684-lab/ResuMate2/ota/index.html';
+const CACHE_KEY='resumate.ota.bundle.v5';
+const ACTIVE_KEY='resumate.ota.active.v1';
+const FALLBACK='fallback.html';
+const text=document.getElementById('ota-text'),error=document.getElementById('ota-error');
+const status=s=>{text.textContent=s};
+const read=()=>{try{return JSON.parse(localStorage.getItem(CACHE_KEY)||'null')}catch(_){return null}};
+const write=(version,html)=>{try{localStorage.setItem(CACHE_KEY,JSON.stringify({version,html,savedAt:Date.now()}));localStorage.setItem(ACTIVE_KEY,version)}catch(_) {}};
+async function sha256(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function run(html){document.open();document.write(html);document.close()}
+function installDynamicUpdater(html,manifest){
+  const updater='''
+<script>(function(){\n"use strict";\nconst V="'+VERSION_URL+'",A="'+APP_URL+'",K="'+CACHE_KEY+'",INTERVAL=300000;\nasync function hash(v){const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,"0")).join("")}\nasync function update(){try{const t=Date.now(),m=await fetch(V+"?t="+t,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("manifest "+r.status);return r.json()});if(!m.otaVersion||!m.sha256)return;const current=localStorage.getItem("'+ACTIVE_KEY+'");if(current===m.otaVersion)return;const h=await fetch(A+"?v="+encodeURIComponent(m.otaVersion)+"&t="+t,{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("bundle "+r.status);return r.text()});if(await hash(h)!==String(m.sha256).toLowerCase())throw Error("integrity");try{localStorage.setItem(K,JSON.stringify({version:m.otaVersion,html:h,savedAt:Date.now()}));localStorage.setItem("'+ACTIVE_KEY+'",m.otaVersion)}catch(_){} location.reload() }catch(_){} }\nsetTimeout(update,30000);setInterval(update,INTERVAL);\n})();</script>''';
+  const marker='</body>';
+  return html.includes(marker)?html.replace(marker,updater+marker):html+updater;
+}
+async function load(){
+ const cached=read();
+ try{
+  status('Checking for the latest ResuMate update…');
+  const t=Date.now();
+  const r=await fetch(VERSION_URL+'?t='+t,{cache:'no-store'});if(!r.ok)throw Error('Update manifest HTTP '+r.status);
+  const m=await r.json();
+  if(!m.otaVersion||!m.sha256)throw Error('Invalid update manifest');
+  if(cached&&cached.version===m.otaVersion&&cached.html){run(installDynamicUpdater(cached.html,m));return}
+  status('Downloading the latest ResuMate update…');
+  const a=await fetch(APP_URL+'?v='+encodeURIComponent(m.otaVersion)+'&t='+t,{cache:'no-store'});if(!a.ok)throw Error('Update bundle HTTP '+a.status);
+  const h=await a.text();if(!h||h.length<1000)throw Error('Update bundle is empty or incomplete');
+  const actual=await sha256(h);if(actual.toLowerCase()!==String(m.sha256).toLowerCase())throw Error('Update integrity check failed');
+  write(m.otaVersion,h);run(installDynamicUpdater(h,m));
+ }catch(e){
+  if(cached&&cached.html){status('Offline mode — using the last verified version.');setTimeout(()=>run(installDynamicUpdater(cached.html,cached)),80);return}
+  try{status('Starting the bundled version…');const r=await fetch(FALLBACK,{cache:'no-store'});if(!r.ok)throw Error('Bundled fallback HTTP '+r.status);const h=await r.text();if(!h||h.length<1000)throw Error('Bundled fallback is empty or incomplete');run(h)}catch(f){status('ResuMate could not start.');error.textContent=String(e.message||e)+'\n'+String(f.message||f)}}
+}
+load();
 })();
 </script>
 </body>
