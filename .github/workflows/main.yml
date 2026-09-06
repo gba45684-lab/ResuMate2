@@ -26,8 +26,10 @@ jobs:
           node-version: 22
           cache: npm
 
+      # package-lock.json predates the currently declared docx dependency.
+      # Use npm install for now; a lockfile refresh can be made separately.
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Build web bundle
         run: python3 scripts/build-web.py
