@@ -58,7 +58,7 @@ jobs:
       - name: Apply native Android bridge and Back behavior
         run: python3 scripts/patch-android.py
 
-      - name: Hide Android status bar
+      - name: Configure Android top black bar and status bar
         run: python3 scripts/patch-android-ui.py
 
       - name: Apply themed Android launcher icon
