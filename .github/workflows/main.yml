@@ -44,6 +44,7 @@ jobs:
           test -f scripts/patch-theme-preview.py
           test -f scripts/patch-android.py
           test -f scripts/patch-android-ui.py
+          test -f scripts/patch-android-icon.py
           test -f scripts/finalize-export-ui.py
           test -f scripts/bundle-runtime-libs.py
           test ! -f index.html
@@ -81,7 +82,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin ota:refs/remotes/origin/ota || true
           git checkout --orphan ota-publish-branch
           git rm -rf . >/dev/null 2>&1 || true
@@ -110,6 +111,9 @@ jobs:
 
       - name: Hide Android status bar
         run: python3 scripts/patch-android-ui.py
+
+      - name: Apply themed Android launcher icon
+        run: python3 scripts/patch-android-icon.py
 
       - name: Build debug APK
         working-directory: android
