@@ -69,16 +69,16 @@ jobs:
           sha = hashlib.sha256(html).hexdigest()
           version = os.environ.get('GITHUB_SHA', 'unknown')
           native = os.environ.get('NATIVE_APP_VERSION', '1.0.0')
-          apk_url = f'https://github.com/gba45684-lab/ResuMate2/releases/download/app-{version}/ResuMate2-{version}.apk'
           manifest = {
               'appVersion': native,
               'otaVersion': version,
               'bundleVersion': version,
-              'minimumNativeVersion': native,
               'sha256': sha,
-              'apkUrl': apk_url,
               'generatedAt': os.environ.get('GITHUB_RUN_STARTED_AT', ''),
-              'app': 'ResuMate2'
+              'app': 'ResuMate2',
+              'updateMode': 'ota-online-first',
+              'autoCheckSeconds': 300,
+              'rollbackEnabled': True
           }
           Path('ota-publish/version.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
           print(json.dumps(manifest, indent=2))
@@ -127,12 +127,11 @@ jobs:
         working-directory: android
         run: |
           python3 - <<'PY'
-          import os
+          import os, re
           from pathlib import Path
           p = Path('app/build.gradle')
           s = p.read_text(encoding='utf-8')
           version = os.environ['NATIVE_APP_VERSION']
-          import re
           s = re.sub(r'versionName\s+"[^"]+"', f'versionName "{version}"', s)
           s = re.sub(r'versionCode\s+\d+', 'versionCode 1', s)
           p.write_text(s, encoding='utf-8')
@@ -141,17 +140,6 @@ jobs:
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon --stacktrace
-
-      - name: Prepare full APK release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p release
-          cp android/app/build/outputs/apk/debug/app-debug.apk "release/ResuMate2-${GITHUB_SHA}.apk"
-          gh release create "app-${GITHUB_SHA}" "release/ResuMate2-${GITHUB_SHA}.apk" \
-            --repo "${GITHUB_REPOSITORY}" \
-            --title "ResuMate full app ${GITHUB_SHA}" \
-            --notes "Full APK fallback for native version ${NATIVE_APP_VERSION}. OTA manifest: appVersion=${NATIVE_APP_VERSION}, otaVersion=${GITHUB_SHA}."
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
