@@ -7,13 +7,13 @@
 <style>html,body{margin:0;width:100%;height:100%;background:#fff;color:#181a1f;font-family:system-ui,-apple-system,Segoe UI,sans-serif}#ota-status{min-height:100%;display:grid;place-items:center;padding:24px;box-sizing:border-box;text-align:center}.ota-card{max-width:420px}.ota-title{font-size:22px;font-weight:700;margin-bottom:8px}.ota-text{font-size:14px;line-height:1.5;color:#666}.ota-error{margin-top:12px;font-size:12px;color:#a33;white-space:pre-wrap;word-break:break-word}</style>
 </head>
 <body>
-<div id="ota-status"><div class="ota-card"><div class="ota-title">ResuMate</div><div class="ota-text" id="ota-text">Checking for the latest app update…</div><div class="ota-error" id="ota-error"></div></div></div>
+<div id="ota-status"><div class="ota-card"><div class="ota-title">ResuMate</div><div class="ota-text" id="ota-text">Checking for the latest ResuMate update…</div><div class="ota-error" id="ota-error"></div></div></div>
 <script>
 (function(){
   'use strict';
   const VERSION_URL='https://raw.githubusercontent.com/gba45684-lab/ResuMate2/ota/version.json';
   const APP_URL='https://raw.githubusercontent.com/gba45684-lab/ResuMate2/ota/index.html';
-  const CACHE_KEY='resumate.ota.bundle.v1';
+  const CACHE_KEY='resumate.ota.bundle.v3';
   const FALLBACK='fallback.html';
   const text=document.getElementById('ota-text');
   const error=document.getElementById('ota-error');
@@ -33,7 +33,7 @@
   async function load(){
     const cached=readCache();
     try{
-      setStatus('Checking for the latest app update…');
+      setStatus('Checking for the latest ResuMate update…');
       const stamp=Date.now();
       const manifestResponse=await fetch(VERSION_URL+'?t='+stamp,{cache:'no-store'});
       if(!manifestResponse.ok) throw new Error('Update manifest HTTP '+manifestResponse.status);
@@ -44,6 +44,7 @@
       const appResponse=await fetch(APP_URL+'?v='+encodeURIComponent(manifest.version)+'&t='+stamp,{cache:'no-store'});
       if(!appResponse.ok) throw new Error('Update bundle HTTP '+appResponse.status);
       const html=await appResponse.text();
+      if(!html||html.length<1000) throw new Error('Update bundle is empty or incomplete');
       const actual=await sha256(html);
       if(actual.toLowerCase()!==String(manifest.sha256).toLowerCase()) throw new Error('Update integrity check failed');
       writeCache(manifest.version,html);
@@ -54,7 +55,9 @@
         setStatus('Starting the bundled version…');
         const fallback=await fetch(FALLBACK,{cache:'no-store'});
         if(!fallback.ok) throw new Error('Bundled fallback HTTP '+fallback.status);
-        run(await fallback.text());
+        const html=await fallback.text();
+        if(!html||html.length<1000) throw new Error('Bundled fallback is empty or incomplete');
+        run(html);
       }catch(f){setStatus('ResuMate could not start.',String(e&&e.message||e)+'\n'+String(f&&f.message||f));}
     }
   }
