@@ -5,8 +5,6 @@ ROOT = Path(__file__).resolve().parents[1]
 INDEX = ROOT / 'www' / 'index.html'
 text = INDEX.read_text(encoding='utf-8')
 
-# Keep the OTA control visible at all times. When a newer bundle is available,
-# make it green and blink; tapping it opens What's New before applying the update.
 script = r'''
 <script>
 (function(){
@@ -25,7 +23,15 @@ script = r'''
     if(document.getElementById(styleId)) return;
     const s=document.createElement('style');
     s.id=styleId;
-    s.textContent='@keyframes resumateOtaBlink{0%,100%{filter:brightness(1);box-shadow:0 2px 10px rgba(0,0,0,.22)}50%{filter:brightness(1.15);box-shadow:0 0 0 4px rgba(34,197,94,.18),0 0 18px rgba(34,197,94,.65)}}#resumate-ota-status{display:block!important}#resumate-ota-status.resumate-update-ready{background:#22c55e!important;color:#fff!important;border-color:#16a34a!important;animation:resumateOtaBlink 1.1s ease-in-out infinite!important}';
+    s.textContent='@keyframes resumateOtaBlink{0%,100%{filter:brightness(1);box-shadow:0 2px 10px rgba(0,0,0,.22)}50%{filter:brightness(1.15);box-shadow:0 0 0 4px rgba(34,197,94,.18),0 0 18px rgba(34,197,94,.65)}}'
+      +'#resumate-ota-status{display:block!important;position:fixed!important;top:8px!important;right:10px!important;z-index:2147483647!important;pointer-events:auto!important;}'
+      +'#resumate-ota-status.resumate-update-ready{background:#22c55e!important;color:#fff!important;border-color:#16a34a!important;animation:resumateOtaBlink 1.1s ease-in-out infinite!important}'
+      +'html,body{margin-top:0!important;padding-top:0!important;}'
+      +'.status-bar{display:none!important;pointer-events:none!important;}'
+      +'.view:not(.active){pointer-events:none!important;}'
+      +'.view.active{pointer-events:auto!important;}'
+      +'.overlay:not(.show){pointer-events:none!important;}'
+      +'button,a,input,select,textarea,[role="button"]{touch-action:manipulation;}';
     document.head.appendChild(s);
   }
 
@@ -82,8 +88,8 @@ script = r'''
     const version=String((manifest && (manifest.appVersion||manifest.version)) || '');
     const wrap=document.createElement('div');
     wrap.id='resumate-ota-whats-new';
-    wrap.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.48);display:flex;align-items:flex-start;justify-content:center;padding:64px 14px 20px;box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,sans-serif;';
-    wrap.innerHTML='<div role="dialog" aria-modal="true" style="width:min(420px,100%);max-height:80vh;overflow:auto;background:#fff;color:#181A1F;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:20px;box-sizing:border-box;">'
+    wrap.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.48);display:flex;align-items:flex-start;justify-content:center;padding:64px 14px 20px;box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,sans-serif;pointer-events:auto;';
+    wrap.innerHTML='<div role="dialog" aria-modal="true" style="width:min(420px,100%);max-height:80vh;overflow:auto;background:#fff;color:#181A1F;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:20px;box-sizing:border-box;pointer-events:auto;">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;"><strong style="font-size:18px;">What\'s New</strong><button id="resumate-ota-close" type="button" aria-label="Close" style="border:0;background:transparent;font-size:24px;line-height:1;cursor:pointer;">×</button></div>'
       +(version?'<div style="font-size:12px;color:#777;margin-top:5px;">ResuMate '+escapeHtml(version.slice(0,12))+'</div>':'')
       +'<ul style="margin:16px 0 20px;padding-left:20px;line-height:1.55;">'+items.map(function(x){return '<li style="margin:7px 0;">'+escapeHtml(x)+'</li>';}).join('')+'</ul>'
@@ -95,10 +101,7 @@ script = r'''
     document.getElementById('resumate-ota-apply').onclick=function(){
       close();
       const b=document.getElementById(id);
-      if(b){
-        applying=true;
-        b.click();
-      }
+      if(b){ applying=true; b.click(); }
     };
   }
 
@@ -115,13 +118,23 @@ script = r'''
     checkUpdate();
   }
 
-  const observer=new MutationObserver(bind);
+  function repairTouchLayers(){
+    document.querySelectorAll('.view:not(.active)').forEach(function(el){el.style.pointerEvents='none';});
+    document.querySelectorAll('.view.active').forEach(function(el){el.style.pointerEvents='auto';});
+    document.querySelectorAll('.overlay:not(.show)').forEach(function(el){el.style.pointerEvents='none';});
+    const hiddenWelcome=document.getElementById('welcome');
+    if(hiddenWelcome && !hiddenWelcome.classList.contains('show')) hiddenWelcome.style.pointerEvents='none';
+  }
+
+  const observer=new MutationObserver(function(){ bind(); repairTouchLayers(); });
   function start(){
     ensureStyle();
     bind();
-    observer.observe(document.body,{childList:true});
+    repairTouchLayers();
+    observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style','hidden','aria-hidden']});
     setInterval(checkUpdate,30000);
-    document.addEventListener('visibilitychange',function(){if(!document.hidden) checkUpdate();});
+    setInterval(repairTouchLayers,2000);
+    document.addEventListener('visibilitychange',function(){if(!document.hidden){checkUpdate();repairTouchLayers();}});
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
@@ -129,7 +142,9 @@ script = r'''
 })();
 </script>
 '''
+
 if 'resumate-ota-whats-new-style' not in text:
     text = text.replace('</body>', script + '</body>', 1)
+
 INDEX.write_text(text, encoding='utf-8')
-print('Added persistent OTA toggle, green blinking update state, and What\'s New confirmation dialog')
+print('Hardened ResuMate touch handling, removed extra web top padding, kept native status bar separate, and preserved persistent OTA What\'s New toggle')
