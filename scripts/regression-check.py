@@ -11,7 +11,7 @@ SOURCE = ROOT / "www" / "app-source.html"
 
 REQUIRED = [
     "build-web.py", "patch-web.py", "patch-ota-whats-new.py",
-    "patch-error-engine.py", "patch-data-protection.py",
+    "patch-error-engine.py", "patch-data-protection.py", "patch-diagnostics.py",
     "finalize-export-ui.py", "bundle-runtime-libs.py", "patch-theme-preview.py",
     "health-check.py",
 ]
