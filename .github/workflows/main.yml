@@ -65,6 +65,7 @@ jobs:
               'app': 'ResuMate2',
               'schemaVersion': 2,
               'appVersion': native,
+              'version': version,
               'otaVersion': version,
               'bundleVersion': version,
               'minWebVersion': '1.0.0',
