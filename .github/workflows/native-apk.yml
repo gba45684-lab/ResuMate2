@@ -1,17 +1,18 @@
-```yaml
 name: Build ResuMate Native APK
 
-on:
+"on":
   workflow_dispatch:
     inputs:
       version:
-        description: 'Native APK version, e.g. 1.1.0'
+        description: "Native APK version, e.g. 1.1.0"
         required: true
-        default: '1.1.0'
+        default: "1.1.0"
+        type: string
       version_code:
-        description: 'Android versionCode'
+        description: "Android versionCode"
         required: true
-        default: '2'
+        default: "2"
+        type: string
 
 permissions:
   contents: write
@@ -77,13 +78,13 @@ jobs:
           s = re.sub(
               r'versionName\s+"[^"]+"',
               f'versionName "{os.environ["NATIVE_APP_VERSION"]}"',
-              s
+              s,
           )
 
           s = re.sub(
               r'versionCode\s+\d+',
               f'versionCode {os.environ["NATIVE_VERSION_CODE"]}',
-              s
+              s,
           )
 
           p.write_text(s, encoding="utf-8")
@@ -116,7 +117,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ResuMate2-${{ env.NATIVE_APP_VERSION }}
-          path: dist/*
+          path: "dist/*"
 
       - name: Publish native APK release
         uses: softprops/action-gh-release@v3
@@ -155,4 +156,3 @@ jobs:
             core.info(`APK uploaded successfully: ${apk.name}`);
             core.info(`APK size: ${apk.size} bytes`);
             core.info(`Download URL: ${apk.browser_download_url}`);
-```
