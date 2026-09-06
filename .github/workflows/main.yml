@@ -38,6 +38,7 @@ jobs:
           test -f www/app-source.html
           test -f www/fallback.html
           test -f scripts/patch-web.py
+          test -f scripts/patch-ota-whats-new.py
           test -f scripts/patch-theme-preview.py
           test -f scripts/finalize-export-ui.py
           test -f scripts/bundle-runtime-libs.py
@@ -48,6 +49,7 @@ jobs:
         run: |
           cp www/app-source.html www/index.html
           python3 scripts/patch-web.py
+          python3 scripts/patch-ota-whats-new.py
           python3 scripts/finalize-export-ui.py
           python3 scripts/bundle-runtime-libs.py
           python3 scripts/patch-theme-preview.py
@@ -55,12 +57,14 @@ jobs:
           cp www/index.html ota-publish/index.html
           sha256sum ota-publish/index.html | awk '{print $1}' > ota-publish/index.sha256
           python3 - <<'PY'
-          import hashlib, json, os
+          import hashlib, json, os, subprocess
           from pathlib import Path
           html = Path('ota-publish/index.html').read_bytes()
           sha = hashlib.sha256(html).hexdigest()
           version = os.environ.get('GITHUB_SHA', 'unknown')
           native = os.environ.get('NATIVE_APP_VERSION', '1.1.0')
+          raw = subprocess.check_output(['git', 'log', '-8', '--pretty=format:%s'], text=True)
+          whats_new = [line.strip() for line in raw.splitlines() if line.strip()]
           manifest = {
               'app': 'ResuMate2',
               'schemaVersion': 2,
@@ -76,6 +80,7 @@ jobs:
               'autoApply': True,
               'pollIntervalMs': 300000,
               'rollbackEnabled': True,
+              'whatsNew': whats_new,
               'features': {
                   'aiDoctor': True,
                   'ats': True,
