@@ -9,10 +9,10 @@ ENGINE = r'''<script>
 (function(){
   'use strict';
   const KEY='resumate.error-engine.v1';
+  const BOOT_PENDING='resumate.ota.boot.pending.v1';
+  const BOOT_SUCCESS='resumate.ota.boot.success.v1';
   const MAX=40;
   const recent=[];
-  let reloading=false;
-
   function normalize(value){
     if(value instanceof Error) return {name:value.name||'Error',message:value.message||String(value),stack:value.stack||''};
     if(value && typeof value==='object') return {name:String(value.name||'Error'),message:String(value.message||value.reason||JSON.stringify(value)),stack:String(value.stack||'')};
@@ -29,50 +29,25 @@ ENGINE = r'''<script>
   }
   function persist(entry){
     recent.push(entry); while(recent.length>MAX) recent.shift();
-    try{ localStorage.setItem(KEY,JSON.stringify(recent)); }catch(_){ /* storage itself may be broken */ }
+    try{ localStorage.setItem(KEY,JSON.stringify(recent)); }catch(_){ }
   }
-  function toast(message){
-    try{
-      if(typeof window.toast==='function') window.toast(message);
-      else if(typeof window.showToast==='function') window.showToast(message);
-    }catch(_){ }
-  }
-  function analyze(error, context){
-    const e=normalize(error);
-    const entry={time:new Date().toISOString(),type:classify(e),context:context||'runtime',name:e.name,message:e.message,stack:e.stack};
-    persist(entry);
-    return entry;
-  }
+  function toast(message){try{if(typeof window.toast==='function')window.toast(message);else if(typeof window.showToast==='function')window.showToast(message);}catch(_){}}
+  function analyze(error,context){const e=normalize(error);const entry={time:new Date().toISOString(),type:classify(e),context:context||'runtime',name:e.name,message:e.message,stack:e.stack};persist(entry);return entry;}
   function safeRecover(entry){
-    /* Only reversible, low-risk recovery actions are automatic. */
     if(entry.type==='storage'){
-      try{
-        ['resumate.ota.active.v3','resumate.ota.bundle.v7','resumate.ota.bundle.v3'].forEach(k=>{
-          const v=localStorage.getItem(k); if(v) JSON.parse(v);
-        });
-      }catch(_){ /* do not delete user resume data */ }
+      try{['resumate.ota.active.v3','resumate.ota.bundle.v7','resumate.ota.bundle.v3'].forEach(k=>{const v=localStorage.getItem(k);if(v)JSON.parse(v);});}catch(_){ }
     }
-    if(entry.type==='network' && !navigator.onLine) toast('ResuMate is offline. Your local work is safe; retry when online.');
-    if(entry.type==='runtime' || entry.type==='syntax') toast('ResuMate detected an app error. Please retry the action.');
+    if(entry.type==='network'&&!navigator.onLine)toast('ResuMate is offline. Your local work is safe; retry when online.');
+    if(entry.type==='runtime'||entry.type==='syntax')toast('ResuMate detected an app error. Please retry the action.');
   }
-  window.ResuMateErrorEngine={
-    capture:function(error,context){const e=analyze(error,context); safeRecover(e); return e;},
-    getRecent:function(){return recent.slice();},
-    clear:function(){recent.length=0;try{localStorage.removeItem(KEY);}catch(_){}}
-  };
-  window.addEventListener('error',function(ev){
-    const e=analyze(ev.error||ev.message||'Unknown error','window.error'); safeRecover(e);
-  });
-  window.addEventListener('unhandledrejection',function(ev){
-    const e=analyze(ev.reason||'Unhandled promise rejection','unhandledrejection'); safeRecover(e);
-  });
-  window.addEventListener('online',function(){
-    try{ if(typeof window.ResuMateOTAUpdateCheck==='function') window.ResuMateOTAUpdateCheck(); }catch(_){ }
-  });
+  window.ResuMateErrorEngine={capture:function(error,context){const e=analyze(error,context);safeRecover(e);return e;},getRecent:function(){return recent.slice();},clear:function(){recent.length=0;try{localStorage.removeItem(KEY);}catch(_){}}};
+  window.addEventListener('error',function(ev){const e=analyze(ev.error||ev.message||'Unknown error','window.error');safeRecover(e);});
+  window.addEventListener('unhandledrejection',function(ev){const e=analyze(ev.reason||'Unhandled promise rejection','unhandledrejection');safeRecover(e);});
+  window.addEventListener('online',function(){try{if(typeof window.ResuMateOTAUpdateCheck==='function')window.ResuMateOTAUpdateCheck();}catch(_){}});
   window.addEventListener('offline',function(){toast('ResuMate is offline. Local features remain available.');});
-  try{
-    const old=localStorage.getItem(KEY); if(old){const parsed=JSON.parse(old); if(Array.isArray(parsed)) parsed.slice(-MAX).forEach(x=>recent.push(x));}
-  }catch(_){ }
+  try{const old=localStorage.getItem(KEY);if(old){const parsed=JSON.parse(old);if(Array.isArray(parsed))parsed.slice(-MAX).forEach(x=>recent.push(x));}}catch(_){ }
+  // The loader uses this marker to distinguish a healthy startup from a failed OTA boot.
+  setTimeout(function(){try{const p=JSON.parse(localStorage.getItem(BOOT_PENDING)||'null');if(p&&p.version){localStorage.setItem(BOOT_SUCCESS,JSON.stringify({version:p.version,time:Date.now()}));}}catch(_){ }},5000);
 })();
 </script>
 '''
