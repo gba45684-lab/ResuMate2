@@ -50,6 +50,9 @@ jobs:
       - name: Post-build functional smoke checks
         run: python3 scripts/postbuild-smoke.py
 
+      - name: OTA safety gate
+        run: python3 scripts/ota-safety-check.py
+
       - name: Verify generated bundle
         run: |
           set -euo pipefail
