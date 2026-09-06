@@ -27,32 +27,22 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Verify project structure
+      - name: Build web bundle
+        run: python3 scripts/build-web.py
+
+      - name: Verify generated bundle
         run: |
-          test -f package.json
-          test -f capacitor.config.json
-          test -f www/index.html
-          test -f www/ota-loader.html
-          test -f www/app-source.html
-          test -f www/fallback.html
-          test -f scripts/patch-web.py
-          test -f scripts/patch-ota-whats-new.py
-          test -f scripts/patch-theme-preview.py
-          test -f scripts/finalize-export-ui.py
-          test -f scripts/bundle-runtime-libs.py
-          test -f scripts/patch-theme-preview.py
+          set -euo pipefail
+          test -s www/index.html
+          grep -q 'resumate-ota-status' www/index.html
+          grep -q 'VERSION_URL' www/index.html
           test ! -f index.html
 
-      - name: Build verified OTA bundle
+      - name: Prepare OTA release
         run: |
-          cp www/app-source.html www/index.html
-          python3 scripts/patch-web.py
-          python3 scripts/patch-ota-whats-new.py
-          python3 scripts/finalize-export-ui.py
-          python3 scripts/bundle-runtime-libs.py
-          python3 scripts/patch-theme-preview.py
+          set -euo pipefail
           mkdir -p ota-publish
           cp www/index.html ota-publish/index.html
           sha256sum ota-publish/index.html | awk '{print $1}' > ota-publish/index.sha256
@@ -93,12 +83,12 @@ jobs:
           Path('ota-publish/version.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
           print(json.dumps(manifest, indent=2))
           PY
-          cp www/ota-loader.html www/index.html
 
       - name: Publish OTA branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout --orphan ota-publish-branch
