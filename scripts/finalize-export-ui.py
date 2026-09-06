@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import re
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = ROOT / 'www' / 'index.html'
@@ -25,25 +24,67 @@ def replace_function(source, name, replacement, assignment):
 
 pdf = '''            async function performPremiumPDFExport() {
                 closeOverlay('pdfExport');
-                toast('Generating PDF...');
+                toast('Generating high-quality PDF...');
                 const filename = (state.profile.name || 'Resume').replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf';
                 let temp = null;
                 try {
                     if (typeof html2pdf === 'undefined') throw new Error('PDF library not loaded');
+
+                    // Export the same rendered resume, but use a true A4 page canvas with
+                    // controlled page margins. The previous JPEG/scale-2 pipeline softened
+                    // small text; PNG at high DPI keeps characters and thin rules crisp.
                     temp = document.createElement('div');
-                    temp.style.width = '800px';
-                    temp.style.padding = '20px';
+                    temp.className = 'resumate-pdf-export-root';
+                    temp.style.width = '210mm';
+                    temp.style.minHeight = '297mm';
+                    temp.style.boxSizing = 'border-box';
+                    temp.style.margin = '0';
+                    temp.style.padding = '0';
                     temp.style.background = '#ffffff';
                     temp.style.color = '#181A1F';
+                    temp.style.overflow = 'visible';
                     temp.innerHTML = resumeHTML();
+
+                    const printStyle = document.createElement('style');
+                    printStyle.textContent = `
+                        @page { size: A4 portrait; margin: 0; }
+                        .resumate-pdf-export-root { width: 210mm !important; min-height: 297mm !important; }
+                        .resumate-pdf-export-root * { box-sizing: border-box; }
+                        .resumate-pdf-export-root img { max-width: 100%; }
+                        .resumate-pdf-export-root .page-break,
+                        .resumate-pdf-export-root .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+                    `;
+                    temp.prepend(printStyle);
                     document.body.appendChild(temp);
+
+                    // Reference-page margin target: restrained, even whitespace on all four
+                    // sides instead of the old 10mm margin + 20px wrapper double-padding.
                     const opt = {
-                        margin: 10,
+                        margin: [14, 14, 16, 14],
                         filename,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2, useCORS: true, logging: false },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        image: { type: 'png', quality: 1 },
+                        pagebreak: { mode: ['css', 'legacy'], avoid: ['.avoid-break'] },
+                        html2canvas: {
+                            scale: 4,
+                            useCORS: true,
+                            allowTaint: false,
+                            backgroundColor: '#ffffff',
+                            logging: false,
+                            imageTimeout: 15000,
+                            windowWidth: 794,
+                            scrollX: 0,
+                            scrollY: 0
+                        },
+                        jsPDF: {
+                            unit: 'mm',
+                            format: 'a4',
+                            orientation: 'portrait',
+                            compress: true,
+                            putOnlyUsedFonts: true,
+                            precision: 12
+                        }
                     };
+
                     const pdfBlob = await html2pdf().set(opt).from(temp).outputPdf('blob');
                     if (window.ResuMateNative) {
                         await saveBlobToNative(pdfBlob, filename, 'application/pdf');
@@ -82,7 +123,7 @@ docx = '''            async function exportDOCX() {
                     source = document.createElement('div');
                     source.style.position = 'fixed';
                     source.style.left = '-100000px';
-                    source.style.width = '800px';
+                    source.style.width = '210mm';
                     source.innerHTML = resumeHTML();
                     document.body.appendChild(source);
                     const lines = String(source.innerText || source.textContent || '')
@@ -122,4 +163,4 @@ docx = '''            async function exportDOCX() {
 text = replace_function(text, 'exportDOCX', docx, 'window.exportDOCX = exportDOCX;')
 
 INDEX.write_text(text, encoding='utf-8')
-print('Finalized exports: direct PDF download, no print dialog, DOCX text sourced exactly from rendered resume')
+print('Finalized high-quality A4 PDF export: PNG/high-DPI rendering, controlled full-page margins, and no print dialog')
