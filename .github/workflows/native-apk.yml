@@ -98,9 +98,17 @@ jobs:
         run: |
           set -euo pipefail
 
-          APK="android/app/build/outputs/apk/release/app-release.apk"
+          echo "Searching for generated APK..."
+          find android/app/build/outputs -type f -name "*.apk" -print
 
-          echo "Checking APK..."
+          APK="$(find android/app/build/outputs/apk -type f -name "*.apk" -print -quit)"
+
+          if [ -z "$APK" ]; then
+            echo "ERROR: No APK was generated under android/app/build/outputs/apk"
+            exit 1
+          fi
+
+          echo "Using APK: $APK"
           test -s "$APK"
 
           mkdir -p dist
