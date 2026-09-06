@@ -26,9 +26,20 @@ jobs:
           node-version: 22
           cache: npm
 
-      # Keep the current workaround until package-lock.json is regenerated and verified.
+      - name: Synchronize package lockfile
+        run: |
+          set -euo pipefail
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          if ! git diff --quiet -- package-lock.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "chore: synchronize npm lockfile"
+            git push origin HEAD:main
+          fi
+
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Regression checks
         run: python3 scripts/regression-check.py
@@ -39,7 +50,6 @@ jobs:
       - name: Post-build functional smoke checks
         run: python3 scripts/postbuild-smoke.py
 
-      # Retriggered after the post-build health-gate correction.
       - name: Verify generated bundle
         run: |
           set -euo pipefail
