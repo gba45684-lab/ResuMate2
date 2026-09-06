@@ -1,0 +1,36 @@
+{
+  "app": "ResuMate2",
+  "schemaVersion": 2,
+  "appVersion": "1.1.0",
+  "version": "bfc05e73aaa639e7140030ac2a9e26704a3cebdf",
+  "otaVersion": "bfc05e73aaa639e7140030ac2a9e26704a3cebdf",
+  "bundleVersion": "bfc05e73aaa639e7140030ac2a9e26704a3cebdf",
+  "minWebVersion": "1.0.0",
+  "sha256": "05431cb990e5c19064f819f14989082b6cad564deb4b96bb278346e410349463",
+  "generatedAt": "",
+  "channel": "stable",
+  "updateMode": "auto",
+  "autoApply": true,
+  "pollIntervalMs": 300000,
+  "rollbackEnabled": true,
+  "dataProtection": true,
+  "errorEngine": true,
+  "whatsNew": [
+    "Require current OTA click capture handler in build gate",
+    "Harden native build reproducibility and version validation",
+    "Harden OTA workflow: never mutate main during publish",
+    "Fix build verification for OTA click capture v3",
+    "Harden OTA install button touch handling",
+    "Fix home screen touch interception from stale overlays",
+    "Run final OTA click capture patch in web build",
+    "Harden OTA Download and install click capture"
+  ],
+  "features": {
+    "aiDoctor": true,
+    "ats": true,
+    "templates": true,
+    "tracker": true,
+    "interviewCoach": true,
+    "onlineUpdates": true
+  }
+}
