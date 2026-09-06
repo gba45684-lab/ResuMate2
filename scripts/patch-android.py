@@ -27,6 +27,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -44,7 +45,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
-/** Native Android bridge for ResuMate exports and download notifications. */
+/** Native Android bridge for ResuMate exports, updates and download notifications. */
 public final class ResuMateNativeBridge {
     private static final String CHANNEL_ID = "resumate_downloads";
     private static final int NOTIFICATION_PERMISSION_REQUEST = 7001;
@@ -72,6 +73,24 @@ public final class ResuMateNativeBridge {
     private static final class NativeApi {
         private final Activity activity;
         NativeApi(Activity activity) { this.activity = activity; }
+
+        @JavascriptInterface
+        public String getNativeVersion() {
+            try {
+                PackageManager pm = activity.getPackageManager();
+                PackageInfo info = pm.getPackageInfo(activity.getPackageName(), 0);
+                return info.versionName == null ? "0.0.0" : info.versionName;
+            } catch (Exception e) { return "0.0.0"; }
+        }
+
+        @JavascriptInterface
+        public void openExternalUrl(String url) {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(intent);
+            } catch (Exception ignored) { }
+        }
 
         @JavascriptInterface
         public String saveBase64File(String fileName, String mimeType, String base64) {
