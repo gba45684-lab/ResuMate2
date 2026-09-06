@@ -18,6 +18,7 @@ REQUIRED = [
     WWW / "fallback.html",
     ROOT / "scripts" / "patch-web.py",
     ROOT / "scripts" / "patch-ota-whats-new.py",
+    ROOT / "scripts" / "patch-ota-click-capture.py",
     ROOT / "scripts" / "patch-error-engine.py",
     ROOT / "scripts" / "patch-data-protection.py",
     ROOT / "scripts" / "patch-diagnostics.py",
@@ -44,6 +45,7 @@ def main() -> None:
     for script in (
         "patch-web.py",
         "patch-ota-whats-new.py",
+        "patch-ota-click-capture.py",
         "patch-error-engine.py",
         "patch-data-protection.py",
         "patch-diagnostics.py",
@@ -63,6 +65,8 @@ def main() -> None:
         raise SystemExit("Generated bundle is missing diagnostics")
     if "ResuMate interaction recovery" not in text:
         raise SystemExit("Generated bundle is missing interaction recovery")
+    if "ResuMate OTA capture handler v2" not in text:
+        raise SystemExit("Generated bundle is missing OTA click capture")
     run("health-check.py")
 
     print(f"Built {OUTPUT.relative_to(ROOT)} from {SOURCE.relative_to(ROOT)}")
