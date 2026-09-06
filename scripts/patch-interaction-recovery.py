@@ -44,7 +44,9 @@ SCRIPT = r'''
       if(el.id === 'welcome' && el.classList.contains('show')) return;
       var s=getComputedStyle(el);
       var r=el.getBoundingClientRect();
-      if(s.position==='fixed' && r.width >= window.innerWidth*0.85 && r.height >= window.innerHeight*0.85){
+      var large=r.width >= window.innerWidth*0.85 && r.height >= window.innerHeight*0.65;
+      var overlayLike=s.position==='fixed' || s.position==='absolute' || s.position==='sticky';
+      if(overlayLike && large){
         el.style.display='none';
         el.style.visibility='hidden';
       }
