@@ -5,7 +5,6 @@ ROOT = Path(__file__).resolve().parents[1]
 INDEX = ROOT / 'www' / 'index.html'
 text = INDEX.read_text(encoding='utf-8')
 
-# Keep the approved visual system; remove the simulated device chrome and normalize navigation.
 css = '''
         /* ResuMate Android/browser navigation + export fixes */
         .status-bar { display:none !important; }
@@ -16,7 +15,6 @@ css = '''
 if '/* ResuMate Android/browser navigation + export fixes */' not in text:
     text = text.replace('</style>', css + '    </style>', 1)
 
-# OTA status control: hidden unless a newer published OTA bundle exists.
 ota_ui = r'''
 <script>
 (function(){
@@ -27,233 +25,106 @@ ota_ui = r'''
   function ensure(){
     if(document.getElementById(id)) return document.getElementById(id);
     const b=document.createElement('button');
-    b.id=id;
-    b.type='button';
-    b.setAttribute('aria-label','New ResuMate update available');
+    b.id=id; b.type='button'; b.setAttribute('aria-label','New ResuMate update available');
     b.style.cssText='position:fixed;top:4px;right:10px;z-index:2147483647;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:#fff;color:#222;box-shadow:0 2px 10px rgba(0,0,0,.22);padding:6px 10px;font:700 11px system-ui,-apple-system,Segoe UI,sans-serif;cursor:pointer;display:none;max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
     document.body.appendChild(b);
-    b.addEventListener('click',function(){
-      b.textContent='↻ Updating…';
-      b.disabled=true;
+    b.addEventListener('click',async function(){
+      b.textContent='↻ Updating…'; b.disabled=true;
       try{
-        ACTIVE_KEYS.forEach(function(k){ localStorage.removeItem(k); });
-        if('caches' in window){
-          caches.keys().then(function(keys){ return Promise.all(keys.filter(function(k){ return /resumate\.ota/i.test(k); }).map(function(k){ return caches.delete(k); })); }).finally(function(){ window.location.reload(true); });
-        }else window.location.reload(true);
-      }catch(e){ window.location.reload(true); }
+        if(typeof window.ResuMateOTAUpdateCheck==='function'){
+          await window.ResuMateOTAUpdateCheck();
+          return;
+        }
+        ACTIVE_KEYS.forEach(k=>localStorage.removeItem(k));
+        location.reload();
+      }catch(e){ location.reload(); }
     });
     return b;
   }
-  function hide(){
-    const b=document.getElementById(id);
-    if(b) b.style.display='none';
-  }
-  function show(version){
-    const b=ensure();
-    b.textContent='NEW • Update';
-    b.title='New ResuMate update '+version.slice(0,12)+' is available. Tap to apply it.';
-    b.disabled=false;
-    b.style.display='block';
-  }
-  function readVersion(key){
-    try{
-      const raw=localStorage.getItem(key);
-      if(!raw) return '';
-      const value=JSON.parse(raw);
-      if(typeof value==='string') return value;
-      if(value && typeof value==='object') return String(value.version||value.otaVersion||value.bundleVersion||'');
-    }catch(e){
-      return raw || '';
-    }
-    return '';
-  }
-  function activeVersion(){
-    for(const key of ACTIVE_KEYS){
-      const v=readVersion(key);
-      if(v) return v;
-    }
-    return '';
-  }
-  async function check(){
-    try{
-      const r=await fetch(VERSION_URL+'?status='+Date.now(),{cache:'no-store'});
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      const m=await r.json();
-      const published=String(m.version||m.otaVersion||m.bundleVersion||'');
-      const installed=activeVersion();
-      if(published && installed && published!==installed) show(published);
-      else hide();
-    }catch(e){
-      // Never show a false update/fresh state when the manifest cannot be checked.
-      hide();
-    }
-  }
-  function start(){
-    ensure();
-    check();
-    setInterval(check,30000);
-    document.addEventListener('visibilitychange',function(){ if(!document.hidden) check(); });
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
-  else start();
+  function hide(){const b=document.getElementById(id);if(b)b.style.display='none';}
+  function show(version){const b=ensure();b.textContent='NEW • Update';b.title='New ResuMate update '+version.slice(0,12)+' is available. Tap to apply it.';b.disabled=false;b.style.display='block';}
+  function readVersion(key){try{const raw=localStorage.getItem(key);if(!raw)return '';const value=JSON.parse(raw);if(typeof value==='string')return value;if(value&&typeof value==='object')return String(value.version||value.otaVersion||value.bundleVersion||'')}catch(e){return localStorage.getItem(key)||''}return ''}
+  function activeVersion(){for(const key of ACTIVE_KEYS){const v=readVersion(key);if(v)return v}return ''}
+  async function check(){try{const r=await fetch(VERSION_URL+'?status='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const m=await r.json();const published=String(m.version||m.otaVersion||m.bundleVersion||'');const installed=activeVersion();if(published&&installed&&published!==installed)show(published);else hide()}catch(e){hide()}}
+  function start(){ensure();check();setInterval(check,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
 </script>
 '''
-# Replace any previous OTA status injection, then install the corrected one.
 start_marker='\n<script>\n(function(){\n  \'use strict\';\n  const VERSION_URL=\'https://raw.githubusercontent.com/gba45684-lab/ResuMate2/ota/version.json\';'
 if 'resumate-ota-status' in text:
     start=text.find(start_marker)
-    if start==-1:
-        start=text.find('<script>', text.find('resumate-ota-status')-2000)
-    end=text.find('</script>', text.find('resumate-ota-status'))
-    if start!=-1 and end!=-1:
-        text=text[:start] + '\n' + text[end+len('</script>'):]
-text=text.replace('</body>', ota_ui + '</body>', 1)
+    if start==-1:start=text.find('<script>',text.find('resumate-ota-status')-2000)
+    end=text.find('</script>',text.find('resumate-ota-status'))
+    if start!=-1 and end!=-1:text=text[:start]+'\n'+text[end+len('</script>'):]
+text=text.replace('</body>',ota_ui+'</body>',1)
 
-old_back = '''            function smartBack() {
+old_back='''            function smartBack() {
                 if (state.navHistory.length > 1) {
                     state.navHistory.pop();
                     go(state.navHistory[state.navHistory.length - 1] || 'home', true);
                 } else go('home', true);
             }'''
-new_back = '''            function smartBack() {
+new_back='''            function smartBack() {
                 const overlays = Array.from(document.querySelectorAll('.overlay.show')).filter(x => x.id !== 'welcome');
-                if (overlays.length) {
-                    overlays[overlays.length - 1].classList.remove('show');
-                    return;
-                }
-                if (mode === 'preview' && document.querySelector('.view.active')?.id === 'builder') {
-                    mode = 'edit';
-                    renderBuilder();
-                    return;
-                }
-                if (state.navHistory.length > 1) {
-                    state.navHistory.pop();
-                    go(state.navHistory[state.navHistory.length - 1] || 'home', true);
-                } else go('home', true);
+                if (overlays.length) { overlays[overlays.length - 1].classList.remove('show'); return; }
+                if (mode === 'preview' && document.querySelector('.view.active')?.id === 'builder') { mode = 'edit'; renderBuilder(); return; }
+                if (state.navHistory.length > 1) { state.navHistory.pop(); go(state.navHistory[state.navHistory.length - 1] || 'home', true); }
+                else go('home', true);
             }'''
-if old_back in text:
-    text = text.replace(old_back, new_back, 1)
+if old_back in text:text=text.replace(old_back,new_back,1)
 
-helper = '''
+helper='''
             async function saveBlobToNative(blob, filename, mimeType) {
                 if (!window.ResuMateNative) return false;
-                const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(String(reader.result).split(',')[1] || '');
-                    reader.onerror = reject;
-                    reader.readAsDataURL(blob);
-                });
+                const base64 = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onloadend = () => resolve(String(reader.result).split(',')[1] || ''); reader.onerror = reject; reader.readAsDataURL(blob); });
                 const result = window.ResuMateNative.saveBase64File(filename, mimeType, base64);
                 if (!String(result).startsWith('OK:')) throw new Error(String(result));
-                if (typeof window.ResuMateNative.notifyDownload === 'function') {
-                    window.ResuMateNative.notifyDownload(filename, mimeType, String(result).slice(3));
-                }
+                if (typeof window.ResuMateNative.notifyDownload === 'function') window.ResuMateNative.notifyDownload(filename, mimeType, String(result).slice(3));
                 return true;
             }
 '''
-if 'async function saveBlobToNative' not in text:
-    marker = '            // ─── PDF ─────────────────────────────────────────────────────\n'
-    text = text.replace(marker, marker + helper, 1)
+if 'async function saveBlobToNative' not in text:text=text.replace('            // ─── PDF ─────────────────────────────────────────────────────\n','            // ─── PDF ─────────────────────────────────────────────────────\n'+helper,1)
+text=text.replace('<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>','<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js" onerror="window.__docxLoadFailed=true"></script>',1)
 
-# DOCX library: fail clearly if CDN is unavailable; do not silently claim a download.
-text = text.replace("<script src=\"https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js\"></script>", "<script src=\"https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js\" onerror=\"window.__docxLoadFailed=true\"></script>", 1)
-
-start = text.find('            function performPremiumPDFExport() {')
-end_marker = '            window.performPremiumPDFExport = performPremiumPDFExport;'
-end = text.find(end_marker, start)
-if start != -1 and end != -1:
-    end += len(end_marker)
-    new_pdf = '''            async function performPremiumPDFExport() {
-                closeOverlay('pdfExport');
-                toast('Generating PDF...');
-                const filename = (state.profile.name || 'Resume').replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf';
-                let temp = null;
-                try {
-                    if (typeof html2pdf === 'undefined') throw new Error('PDF library not loaded');
-                    temp = document.createElement('div');
-                    temp.style.width = '800px';
-                    temp.style.padding = '20px';
-                    temp.style.background = '#ffffff';
-                    temp.style.color = '#181A1F';
-                    temp.innerHTML = resumeHTML();
-                    document.body.appendChild(temp);
-                    const opt = {
-                        margin: 10,
-                        filename,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2, useCORS: true, logging: false },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                    };
-                    const pdfBlob = await html2pdf().set(opt).from(temp).outputPdf('blob');
-                    if (window.ResuMateNative) {
-                        await saveBlobToNative(pdfBlob, filename, 'application/pdf');
-                        toast('PDF saved to Downloads/ResuMate/Resumes');
-                    } else {
-                        const url = URL.createObjectURL(pdfBlob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                        setTimeout(() => URL.revokeObjectURL(url), 2000);
-                        toast('PDF exported successfully!');
-                    }
-                } catch (err) {
-                    toast('PDF export error: ' + err.message);
-                    console.error(err);
-                } finally {
-                    if (temp && temp.parentNode) temp.parentNode.removeChild(temp);
-                }
+start=text.find('            function performPremiumPDFExport() {'); end_marker='            window.performPremiumPDFExport = performPremiumPDFExport;'; end=text.find(end_marker,start)
+if start!=-1 and end!=-1:
+    end+=len(end_marker)
+    new_pdf='''            async function performPremiumPDFExport() {
+                closeOverlay('pdfExport'); toast('Generating PDF...');
+                const filename=(state.profile.name||'Resume').replace(/[^a-zA-Z0-9_\-]/g,'_')+'.pdf'; let temp=null;
+                try { if(typeof html2pdf==='undefined')throw new Error('PDF library not loaded'); temp=document.createElement('div'); temp.style.width='800px'; temp.style.padding='20px'; temp.style.background='#ffffff'; temp.style.color='#181A1F'; temp.innerHTML=resumeHTML(); document.body.appendChild(temp);
+                    const opt={margin:10,filename,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
+                    const pdfBlob=await html2pdf().set(opt).from(temp).outputPdf('blob');
+                    if(window.ResuMateNative){await saveBlobToNative(pdfBlob,filename,'application/pdf');toast('PDF saved to Downloads/ResuMate/Resumes');}
+                    else {const url=URL.createObjectURL(pdfBlob);const link=document.createElement('a');link.href=url;link.download=filename;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('PDF exported successfully!');}
+                } catch(err){toast('PDF export error: '+err.message);console.error(err)} finally{if(temp&&temp.parentNode)temp.parentNode.removeChild(temp)}
             }
-            window.performPremiumPDFExport = performPremiumPDFExport;'''
-    text = text[:start] + new_pdf + text[end:]
+            window.performPremiumPDFExport=performPremiumPDFExport;'''
+    text=text[:start]+new_pdf+text[end:]
 
-start = text.find('            function exportDOCX() {')
-end_marker = '            window.exportDOCX = exportDOCX;'
-end = text.find(end_marker, start)
-if start != -1 and end != -1:
-    end += len(end_marker)
-    new_docx = '''            async function exportDOCX() {
-                if (typeof docx === 'undefined' || window.__docxLoadFailed) {
-                    toast('DOCX library not loaded. Check internet connection and retry.');
-                    return;
-                }
-                try {
-                    const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docx;
-                    const doc = new Document({ sections: [{ properties: {}, children: [
-                        new Paragraph({ children: [new TextRun({ text: state.profile.name, bold: true, size: 28 })], heading: HeadingLevel.HEADING_1 }),
-                        new Paragraph({ children: [new TextRun({ text: state.profile.role, size: 22, color: '1D3450' })] }),
-                        new Paragraph({ children: [new TextRun({ text: [state.profile.email, state.profile.phone, state.profile.location].filter(Boolean).join(' · '), size: 18, color: '888888' })] }),
-                        ...(state.summary ? [new Paragraph({ children: [new TextRun({ text: 'SUMMARY', bold: true, size: 20 })], heading: HeadingLevel.HEADING_2 }), new Paragraph({ children: [new TextRun({ text: state.summary, size: 20 })] })] : []),
-                        ...state.experience.flatMap(exp => [new Paragraph({ children: [new TextRun({ text: exp.company, bold: true, size: 20 }), new TextRun({ text: ' — ' + exp.role, size: 18 }), new TextRun({ text: ' (' + (exp.from || '') + '-' + (exp.to || '') + ')', size: 16, color: '888888' })] }), ...exp.bullets.filter(Boolean).map(b => new Paragraph({ children: [new TextRun({ text: '• ' + b, size: 18 })], bullet: { level: 0 } }))]),
-                        ...(state.skills.length ? [new Paragraph({ children: [new TextRun({ text: 'SKILLS', bold: true, size: 20 })], heading: HeadingLevel.HEADING_2 }), new Paragraph({ children: [new TextRun({ text: state.skills.join(' · '), size: 18 })] })] : []),
-                        ...(state.education.length ? [new Paragraph({ children: [new TextRun({ text: 'EDUCATION', bold: true, size: 20 })], heading: HeadingLevel.HEADING_2 }), ...state.education.map(edu => new Paragraph({ children: [new TextRun({ text: edu.school + ' — ' + edu.degree, size: 18 })] }))] : [])
-                    ] }] });
-                    const blob = await Packer.toBlob(doc);
-                    const filename = (state.profile.name || 'Resume').replace(/[^a-zA-Z0-9_\-]/g, '_') + '.docx';
-                    if (window.ResuMateNative) {
-                        await saveBlobToNative(blob, filename, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-                        toast('DOCX saved to Downloads/ResuMate/Resumes');
-                    } else {
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                        setTimeout(() => URL.revokeObjectURL(url), 2000);
-                        toast('DOCX downloaded');
-                    }
-                } catch (e) {
-                    toast('DOCX export error: ' + e.message);
-                    console.error(e);
-                }
+start=text.find('            function exportDOCX() {'); end_marker='            window.exportDOCX = exportDOCX;'; end=text.find(end_marker,start)
+if start!=-1 and end!=-1:
+    end+=len(end_marker)
+    new_docx='''            async function exportDOCX() {
+                if(typeof docx==='undefined'||window.__docxLoadFailed){toast('DOCX library not loaded. Check internet connection and retry.');return;}
+                try { const {Document,Packer,Paragraph,TextRun,HeadingLevel}=docx;
+                    const doc=new Document({sections:[{properties:{},children:[
+                        new Paragraph({children:[new TextRun({text:state.profile.name,bold:true,size:28})],heading:HeadingLevel.HEADING_1}),
+                        new Paragraph({children:[new TextRun({text:state.profile.role,size:22,color:'1D3450'})]}),
+                        new Paragraph({children:[new TextRun({text:[state.profile.email,state.profile.phone,state.profile.location].filter(Boolean).join(' · '),size:18,color:'888888'})]}),
+                        ...(state.summary?[new Paragraph({children:[new TextRun({text:'SUMMARY',bold:true,size:20})],heading:HeadingLevel.HEADING_2}),new Paragraph({children:[new TextRun({text:state.summary,size:20})]})]:[]),
+                        ...state.experience.flatMap(exp=>[new Paragraph({children:[new TextRun({text:exp.company,bold:true,size:20}),new TextRun({text:' — '+exp.role,size:18}),new TextRun({text:' ('+(exp.from||'')+'-'+(exp.to||'')+')',size:16,color:'888888'})]}),...exp.bullets.filter(Boolean).map(b=>new Paragraph({children:[new TextRun({text:'• '+b,size:18})],bullet:{level:0}}))]),
+                        ...(state.skills.length?[new Paragraph({children:[new TextRun({text:'SKILLS',bold:true,size:20})],heading:HeadingLevel.HEADING_2}),new Paragraph({children:[new TextRun({text:state.skills.join(' · '),size:18})]})]:[]),
+                        ...(state.education.length?[new Paragraph({children:[new TextRun({text:'EDUCATION',bold:true,size:20})],heading:HeadingLevel.HEADING_2}),...state.education.map(edu=>new Paragraph({children:[new TextRun({text:edu.school+' — '+edu.degree,size:18})]}))]:[])
+                    ]}]});
+                    const blob=await Packer.toBlob(doc); const filename=(state.profile.name||'Resume').replace(/[^a-zA-Z0-9_\-]/g,'_')+'.docx';
+                    if(window.ResuMateNative){await saveBlobToNative(blob,filename,'application/vnd.openxmlformats-officedocument.wordprocessingml.document');toast('DOCX saved to Downloads/ResuMate/Resumes');}
+                    else {const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=filename;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('DOCX downloaded');}
+                } catch(e){toast('DOCX export error: '+e.message);console.error(e)}
             }
-            window.exportDOCX = exportDOCX;'''
-    text = text[:start] + new_docx + text[end:]
+            window.exportDOCX=exportDOCX;'''
+    text=text[:start]+new_docx+text[end:]
 
-INDEX.write_text(text, encoding='utf-8')
-print('Patched web UI: hidden simulated device status bar, navigation/back, PDF export, DOCX export, native download notifications, OTA update badge only when a newer OTA is available')
+INDEX.write_text(text,encoding='utf-8')
+print('Patched web UI and instant OTA update polling')
