@@ -39,6 +39,7 @@ jobs:
       - name: Post-build functional smoke checks
         run: python3 scripts/postbuild-smoke.py
 
+      # Retriggered after the post-build health-gate correction.
       - name: Verify generated bundle
         run: |
           set -euo pipefail
